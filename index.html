@@ -4,25 +4,25 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Distance and Displacement | Dr. Nuha Aljuneidi</title>
-<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Roboto+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;600&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root{--ink:#10243e;--navy:#002855;--blue:#005eb8;--gold:#ffcc00;--dist:#d66b2c;--disp:#07847b;--paper:#fff;--line:#d9e3ef;--muted:#5f7084;}
   *{box-sizing:border-box;}html,body{margin:0;padding:0;}
-  body{font-family:"Lato",system-ui,sans-serif;color:var(--ink);background:#f4f7fb;min-height:100vh;padding:clamp(1rem,3.5vw,2.5rem);display:flex;flex-direction:column;align-items:center;}
+  body{font-family:"Source Sans 3",system-ui,sans-serif;color:var(--ink);background:#f4f7fb;min-height:100vh;padding:clamp(1rem,3.5vw,2.5rem);display:flex;flex-direction:column;align-items:center;}
   .wrap{width:100%;max-width:1120px;}
-  .course-banner{background:var(--navy);color:white;border-top:10px solid var(--gold);padding:clamp(1.35rem,3vw,2.15rem);margin-bottom:1.45rem;box-shadow:0 10px 24px rgba(0,40,85,.16);}
-  .instructor{margin:0 0 .35rem;font-size:clamp(1.35rem,3vw,2rem);font-weight:900;}.course-label{margin:0 0 1.1rem;font-family:"Roboto Mono",monospace;font-size:.78rem;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--gold);}
-  h1{margin:0;color:white;font-size:clamp(2rem,5vw,3.5rem);line-height:1.05;letter-spacing:-.035em;font-weight:900;}h1 .vs{color:var(--gold);}.activity-id{margin:.65rem 0 0;font-family:"Roboto Mono",monospace;font-size:.8rem;letter-spacing:.08em;color:#c7d9ed;}
-  .student-row{display:flex;align-items:flex-end;gap:.8rem;flex-wrap:wrap;margin:-.2rem 0 1.25rem;padding:.8rem 0;border-bottom:1px solid var(--line);}.student-field{display:flex;flex-direction:column;gap:.3rem;}.student-row label,.submission label{font-weight:800;color:var(--navy);}.student-row input{width:min(310px,100%);font:inherit;color:var(--ink);background:white;border:1px solid #9db1c8;border-radius:4px;padding:.6rem .7rem;outline:none;}.student-row input:focus,.submission textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,94,184,.15);}.privacy-note,.submit-status{flex-basis:100%;margin:.1rem 0 0;font-size:.8rem;color:var(--muted);}.submit-status{min-height:1.2em;font-weight:700;color:var(--navy);}
+  .course-banner{background:var(--navy);color:white;border-top:6px solid var(--gold);padding:clamp(1.25rem,2.5vw,1.75rem);margin-bottom:1.45rem;}
+  .instructor{margin:0 0 .3rem;font-size:clamp(1.25rem,2.5vw,1.65rem);font-weight:700;letter-spacing:.01em;}.course-label{margin:0 0 .9rem;font-family:"Source Code Pro",monospace;font-size:.75rem;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--gold);}
+  h1{margin:0;color:white;font-size:clamp(1.85rem,4.2vw,2.9rem);line-height:1.08;letter-spacing:-.02em;font-weight:700;}h1 .vs{color:white;}.activity-id{margin:.55rem 0 0;font-family:"Source Code Pro",monospace;font-size:.76rem;letter-spacing:.08em;color:var(--gold);}
+  .student-row{display:flex;align-items:flex-end;gap:.8rem;flex-wrap:wrap;margin:-.2rem 0 1.25rem;padding:.8rem 0;border-bottom:1px solid var(--line);}.student-field{display:flex;flex-direction:column;gap:.3rem;}.student-row label,.submission label{font-weight:800;color:var(--navy);}.student-row input{width:min(310px,100%);font:inherit;color:var(--ink);background:white;border:1px solid #9db1c8;border-radius:2px;padding:.6rem .7rem;outline:none;}.student-row input:focus,.submission textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,94,184,.15);}.submit-status{flex-basis:100%;margin:0;font-size:.86rem;min-height:1.2em;font-weight:700;color:var(--navy);}
   .lede{font-size:1.05rem;max-width:76ch;margin:0 0 1.4rem;line-height:1.6;color:#3e5269;}
-  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.2rem;}.bubble{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:1rem .9rem .8rem;text-align:center;box-shadow:0 8px 22px rgba(0,40,85,.09);}.bubble .k{font-family:"Roboto Mono",monospace;font-size:.78rem;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;font-weight:600;}.bubble .v{font-weight:900;font-size:2rem;line-height:1.2;font-variant-numeric:tabular-nums;}.bubble.p .v{color:var(--blue);}.bubble.d .v{color:var(--dist);}.bubble.s .v{color:var(--disp);}
-  .stage-frame{border:1px solid #173e68;border-radius:12px;overflow:hidden;box-shadow:0 12px 30px rgba(0,40,85,.15);margin-bottom:1.25rem;background:var(--navy);}.stage-frame svg{width:100%;height:auto;display:block;}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.2rem;}.bubble{background:var(--paper);border:1px solid var(--line);border-radius:2px;padding:1rem .9rem .8rem;text-align:center;box-shadow:none;}.bubble .k{font-family:"Source Code Pro",monospace;font-size:.76rem;color:var(--muted);letter-spacing:.03em;text-transform:uppercase;font-weight:600;}.bubble .v{font-weight:700;font-size:1.7rem;line-height:1.2;font-variant-numeric:tabular-nums;}.bubble.p .v{color:var(--blue);}.bubble.d .v{color:var(--dist);}.bubble.s .v{color:var(--disp);}
+  .stage-frame{border:1px solid #173e68;border-radius:2px;overflow:hidden;box-shadow:0 4px 12px rgba(0,40,85,.08);margin-bottom:1.25rem;background:var(--navy);}.stage-frame svg{width:100%;height:auto;display:block;}
   #walker>*{display:none;}#walker .position-marker{display:block;}
-  .controls{display:flex;gap:.7rem;justify-content:center;flex-wrap:wrap;margin-bottom:1rem;}button{font-family:"Lato",sans-serif;font-weight:800;font-size:.98rem;cursor:pointer;color:white;background:var(--blue);border:1px solid #004f9e;border-radius:7px;padding:.65rem 1.15rem;min-width:140px;box-shadow:0 5px 12px rgba(0,67,133,.18);}button:hover{background:#004f9e;}button:active{transform:translateY(1px);}button:focus-visible{outline:4px dashed var(--blue);outline-offset:3px;}button.ghost{background:white;color:var(--navy);border-color:#9db1c8;}.download{background:var(--gold);border-color:#d4a900;color:var(--navy);}.download:hover{background:#e9b900;}
+  .controls{display:flex;gap:.7rem;justify-content:center;flex-wrap:wrap;margin-bottom:1rem;}button{font-family:"Source Sans 3",sans-serif;font-weight:700;font-size:.96rem;cursor:pointer;color:white;background:var(--blue);border:1px solid #004f9e;border-radius:2px;padding:.62rem 1.1rem;min-width:120px;box-shadow:none;transition:background .15s;}button:hover{background:#004f9e;}button:active{background:#003f7d;}button:focus-visible{outline:4px dashed var(--blue);outline-offset:3px;}button.ghost{background:white;color:var(--navy);border-color:#9db1c8;}.download{background:var(--gold);border-color:#d4a900;color:var(--navy);}.download:hover{background:#e9b900;}
   .legend{display:flex;gap:1.6rem;justify-content:center;flex-wrap:wrap;font-size:.98rem;margin-bottom:1.6rem;font-weight:700;}.legend span{display:inline-flex;align-items:center;gap:.5rem;}.worm{width:34px;height:6px;display:inline-block;}.worm.d{background:var(--dist);}.worm.s{background:var(--disp);}
   .note{margin-top:1.5rem;padding:1rem 0 1.1rem;border-top:2px solid var(--navy);border-bottom:1px solid var(--line);font-size:1rem;line-height:1.65;}.note h2{margin:0 0 .45rem;font-size:1.05rem;letter-spacing:.08em;text-transform:uppercase;color:var(--navy);}.note p{margin:0;}.note b{color:var(--dist);}.note i{color:var(--disp);font-style:normal;font-weight:700;}
-  .submission{margin-top:1.5rem;padding:1.25rem 0;border-top:2px solid var(--navy);border-bottom:1px solid var(--line);}.submission h2{margin:0 0 .35rem;color:var(--navy);font-size:1.3rem;}.submission p{margin:.25rem 0 .8rem;color:#3e5269;}.submission textarea{width:100%;min-height:95px;resize:vertical;font:inherit;line-height:1.5;color:var(--ink);background:white;border:1px solid #9db1c8;border-radius:4px;padding:.7rem;outline:none;}.submission-actions{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:.8rem;}.final-status{min-height:1.3em;margin:.65rem 0 0!important;font-weight:700;color:var(--navy)!important;}
-  footer{margin-top:1.8rem;padding-top:1rem;border-top:1px solid var(--line);font-family:"Roboto Mono",monospace;font-size:.8rem;color:var(--muted);}
+  .submission{margin-top:1.5rem;padding:1.25rem 0;border-top:2px solid var(--navy);border-bottom:1px solid var(--line);}.submission h2{margin:0 0 .35rem;color:var(--navy);font-size:1.3rem;}.submission p{margin:.25rem 0 .8rem;color:#3e5269;}.submission textarea{width:100%;min-height:95px;resize:vertical;font:inherit;line-height:1.5;color:var(--ink);background:white;border:1px solid #9db1c8;border-radius:2px;padding:.7rem;outline:none;}.submission-actions{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:.8rem;}.final-status{min-height:1.3em;margin:.65rem 0 0!important;font-weight:700;color:var(--navy)!important;}
+  footer{margin-top:1.8rem;padding-top:1rem;border-top:1px solid var(--line);font-family:"Source Code Pro",monospace;font-size:.78rem;color:var(--muted);}
   @media(max-width:600px){.stats{grid-template-columns:1fr;}.student-row{align-items:flex-start;flex-direction:column;}.student-row input{width:100%;}button{flex:1;min-width:0;}}
   @media(prefers-reduced-motion:reduce){#walker{transition:none!important;}}
 </style>
@@ -39,7 +39,6 @@
     <div class="student-field"><label for="studentName">Student name</label><input id="studentName" type="text" autocomplete="name" placeholder="Write your full name" required></div>
     <div class="student-field"><label for="studentEmail">Email <span style="font-weight:400;color:var(--muted)">(optional)</span></label><input id="studentEmail" type="email" autocomplete="email" placeholder="name@example.com"></div>
     <button id="startActivity" type="button">Start Activity</button>
-    <p class="privacy-note">Your name, optional email, activity, and start time will be recorded in the instructor's Google Sheet.</p>
     <p id="submitStatus" class="submit-status" role="status" aria-live="polite"></p>
   </div>
   <p class="lede">Move the position marker along the number line and compare the total path traveled with the change between the initial and final positions.</p>
@@ -54,7 +53,7 @@
 
       <!-- sky -->
       <rect x="0" y="0" width="760" height="230" fill="#002855"/>
-      <text x="36" y="36" fill="#7fc9ff" font-family="Roboto Mono,monospace" font-size="13" letter-spacing="1.5">ONE-DIMENSIONAL POSITION TRACK</text>
+      <text x="36" y="36" fill="#7fc9ff" font-family="Source Code Pro,monospace" font-size="13" letter-spacing="1.5">ONE-DIMENSIONAL POSITION TRACK</text>
       <!-- sun -->
       <circle cx="680" cy="55" r="34" fill="#ffcb06" stroke="#1c2b57" stroke-width="4" opacity="0"/>
       <g stroke="#ffcb06" stroke-width="5" stroke-linecap="round" opacity="0">
@@ -74,7 +73,7 @@
 
       <!-- displacement arrow lane (in the sky) -->
       <line id="dispArrow" x1="380" y1="120" x2="380" y2="120" stroke="#008c95" stroke-width="6" marker-end="url(#ah)" opacity="0"/>
-      <text id="dispLabel" x="380" y="105" text-anchor="middle" font-family="Lato, sans-serif" font-weight="700" font-size="19" fill="#006d74" opacity="0"></text>
+      <text id="dispLabel" x="380" y="105" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-weight="700" font-size="19" fill="#7fc9ff" opacity="0"></text>
 
       <!-- distance wiggle path -->
       <path id="trace" d="" fill="none" stroke="#d9633b" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
@@ -168,7 +167,7 @@
     var tx=document.createElementNS(NS,"text");
     tx.setAttribute("x",x);tx.setAttribute("y",axisY+30);
     tx.setAttribute("text-anchor","middle");
-    tx.setAttribute("font-family","Lato, sans-serif");
+    tx.setAttribute("font-family","Source Sans 3, sans-serif");
     tx.setAttribute("font-weight","700");
     tx.setAttribute("font-size","16");tx.setAttribute("fill","#10243e");
     tx.textContent=(p>0?"+"+p:p);
@@ -270,12 +269,12 @@
     try{
       var name=document.getElementById("studentName").value.trim(),canvas=document.createElement("canvas");canvas.width=1600;canvas.height=1000;var ctx=canvas.getContext("2d");
       ctx.fillStyle="#fff";ctx.fillRect(0,0,1600,1000);ctx.fillStyle="#ffcc00";ctx.fillRect(0,0,1600,14);ctx.fillStyle="#002855";ctx.fillRect(0,14,1600,180);
-      ctx.fillStyle="#fff";ctx.font="700 34px Lato,Arial";ctx.fillText("Dr. Nuha Aljuneidi",60,72);ctx.fillStyle="#ffcc00";ctx.font="700 20px Lato,Arial";ctx.fillText("DYNAMICS IN MOTION · DISTANCE AND DISPLACEMENT",60,112);ctx.fillStyle="#fff";ctx.font="700 44px Lato,Arial";ctx.fillText("Student Solution Record",60,165);
-      ctx.fillStyle="#10243e";ctx.font="700 24px Lato,Arial";ctx.fillText("Student: "+name,60,238);ctx.font="20px Lato,Arial";ctx.fillText("Date: "+new Date().toLocaleString(),60,275);ctx.fillText("Activity 01",1260,238);
+      ctx.fillStyle="#fff";ctx.font="700 34px 'Source Sans 3',Arial";ctx.fillText("Dr. Nuha Aljuneidi",60,72);ctx.fillStyle="#ffcc00";ctx.font="600 20px 'Source Code Pro',monospace";ctx.fillText("DYNAMICS IN MOTION · DISTANCE AND DISPLACEMENT",60,112);ctx.fillStyle="#fff";ctx.font="700 44px 'Source Sans 3',Arial";ctx.fillText("Student Solution Record",60,165);
+      ctx.fillStyle="#10243e";ctx.font="700 24px 'Source Sans 3',Arial";ctx.fillText("Student: "+name,60,238);ctx.font="20px 'Source Sans 3',Arial";ctx.fillText("Date: "+new Date().toLocaleString(),60,275);ctx.fillText("Activity 01",1260,238);
       await drawStage(ctx,110,315,1380,545);
-      ctx.fillStyle="#002855";ctx.font="700 25px Lato,Arial";ctx.fillText("Final Results",60,900);ctx.fillStyle="#10243e";ctx.font="21px Lato,Arial";ctx.fillText("Position: "+fmt(pos),250,900);ctx.fillText("Distance: "+dist+" m",520,900);ctx.fillText("Displacement: "+fmt(pos-start),790,900);
-      ctx.fillStyle="#334b64";ctx.font="18px Lato,Arial";wrapText(ctx,document.getElementById("studentNotes").value.trim(),60,940,1460,24,2);
-      ctx.fillStyle="#002855";ctx.fillRect(0,972,1600,28);ctx.fillStyle="#fff";ctx.font="14px Lato,Arial";ctx.fillText("Dynamics in Motion · Developed by Dr. Nuha Aljuneidi",60,992);
+      ctx.fillStyle="#002855";ctx.font="700 25px 'Source Sans 3',Arial";ctx.fillText("Final Results",60,900);ctx.fillStyle="#10243e";ctx.font="21px 'Source Sans 3',Arial";ctx.fillText("Position: "+fmt(pos),250,900);ctx.fillText("Distance: "+dist+" m",520,900);ctx.fillText("Displacement: "+fmt(pos-start),790,900);
+      ctx.fillStyle="#334b64";ctx.font="18px 'Source Sans 3',Arial";wrapText(ctx,document.getElementById("studentNotes").value.trim(),60,940,1460,24,2);
+      ctx.fillStyle="#002855";ctx.fillRect(0,972,1600,28);ctx.fillStyle="#fff";ctx.font="14px 'Source Sans 3',Arial";ctx.fillText("Dynamics in Motion · Developed by Dr. Nuha Aljuneidi",60,992);
       var a=document.createElement("a");a.download="distance-displacement-solution-"+name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")+".png";a.href=canvas.toDataURL("image/png");a.click();status.textContent="Solution image downloaded.";
     }catch(error){status.textContent="The solution image could not be created. Please try again.";}finally{button.disabled=false;button.textContent="Download Solution Image";}
   });
