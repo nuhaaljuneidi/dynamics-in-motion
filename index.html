@@ -3,126 +3,45 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dynamics in Motion — Distance vs. Displacement</title>
-<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Lato:wght@400;700;900&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<title>Distance and Displacement | Dr. Nuha Aljuneidi</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Roboto+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --ink:#1c2b57;
-    --blue:#03539e;
-    --sky:#eaf1f8;
-    --sky2:#f7f5ee;
-    --grass:#dce6ef;
-    --grass-d:#03539e;
-    --dist:#d9633b;
-    --disp:#008c95;
-    --walker:#6750a4;
-    --sun:#ffcb06;
-    --paper:#ffffff;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{
-    font-family:"Roboto",system-ui,sans-serif;
-    color:var(--ink);
-    background-color:var(--sky2);
-    background-image:linear-gradient(rgba(3,83,158,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(3,83,158,.07) 1px,transparent 1px);
-    background-size:28px 28px;
-    min-height:100vh;
-    padding:clamp(1rem,4vw,2.5rem);
-    display:flex;flex-direction:column;align-items:center;
-  }
-  .wrap{width:100%;max-width:900px;}
-
-  .eyebrow{
-    font-family:"Lato",sans-serif;font-size:.84rem;color:var(--blue);
-    letter-spacing:.18em;font-weight:900;text-transform:uppercase;margin:0 0 .55rem;
-  }
-  h1{
-    font-family:"Lato",sans-serif;font-weight:900;line-height:1;margin:0 0 0.7rem;
-    font-size:clamp(2.2rem,7vw,4rem);letter-spacing:-0.01em;
-    color:var(--ink);
-  }
-  h1 .vs{
-    display:inline-block;background:var(--sun);color:var(--ink);
-    font-family:"Caveat",cursive;font-size:0.55em;
-    padding:0 0.35em;border:2px solid var(--ink);border-radius:10px;
-    transform:rotate(-3deg);
-  }
-  .lede{font-size:1.15rem;max-width:44ch;margin:0 0 1.5rem;line-height:1.4;font-weight:400;}
-
-  /* speech-bubble stats */
-  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.4rem;}
-  .bubble{
-    position:relative;background:var(--paper);
-    border:2px solid rgba(28,43,87,.22);border-radius:16px;
-    padding:0.8rem 1rem 0.9rem;text-align:center;
-    box-shadow:0 10px 26px rgba(28,43,87,.12);
-  }
-  .bubble::after{
-    display:none;
-  }
-  .bubble .k{font-family:"Lato",sans-serif;font-size:.78rem;color:#5f6b85;line-height:1.2;letter-spacing:.08em;text-transform:uppercase;font-weight:700;}
-  .bubble .v{font-weight:800;font-size:2.2rem;line-height:1;font-variant-numeric:tabular-nums;}
-  .bubble.p .v{color:var(--walker);}
-  .bubble.d .v{color:var(--dist);}
-  .bubble.s .v{color:var(--disp);}
-
-  .stage-frame{
-    border:3px solid var(--ink);border-radius:18px;overflow:hidden;
-    box-shadow:0 14px 34px rgba(28,43,87,.16);margin-bottom:1.3rem;background:var(--sky2);
-  }
-  svg{width:100%;height:auto;display:block;}
-
-  .controls{display:flex;gap:0.8rem;justify-content:center;flex-wrap:wrap;margin-bottom:1.3rem;}
-  button{
-    font-family:"Lato",sans-serif;font-weight:900;font-size:1.02rem;cursor:pointer;
-    color:var(--ink);background:var(--sun);
-    border:2px solid var(--ink);border-radius:10px;
-    padding:0.6rem 1.3rem;min-width:150px;
-    box-shadow:0 5px 12px rgba(28,43,87,.16);
-    transition:transform .07s ease, box-shadow .07s ease, background .15s ease;
-  }
-  button:hover{background:#ffdd6b;}
-  button:active{transform:translateY(2px);box-shadow:0 2px 6px rgba(28,43,87,.18);}
-  button:focus-visible{outline:3px solid var(--blue);outline-offset:3px;}
-  button.left{background:#ffb37c;}
-  button.left:hover{background:#ffc59b;}
-  button.right{background:#a6f0c6;}
-  button.right:hover{background:#c2f5d8;}
-  button.ghost{background:var(--paper);min-width:auto;font-size:1rem;}
-
-  .legend{display:flex;gap:1.6rem;justify-content:center;flex-wrap:wrap;font-size:1.05rem;margin-bottom:1.6rem;font-weight:600;}
-  .legend span{display:inline-flex;align-items:center;gap:0.5rem;}
-  .worm{width:34px;height:10px;border-radius:6px;display:inline-block;border:1px solid var(--ink);}
-  .worm.d{background:var(--dist);}
-  .worm.s{background:var(--disp);}
-
-  .note{
-    background:var(--paper);border:2px solid rgba(28,43,87,.2);border-left:8px solid var(--sun);border-radius:14px;
-    padding:1.1rem 1.4rem;font-size:1.08rem;line-height:1.5;
-    box-shadow:0 10px 26px rgba(28,43,87,.1);
-  }
-  .note b{color:var(--dist);}
-  .note i{color:var(--disp);font-style:normal;font-weight:700;}
-  footer{
-    margin-top:2rem;font-family:"Lato",sans-serif;font-size:.9rem;color:#5f6b85;
-  }
-
-  @media (max-width:540px){
-    .stats{grid-template-columns:1fr;}
-    button{flex:1;min-width:0;}
-    .bubble::after{left:50%;margin-left:-11px;}
-  }
-  @media (prefers-reduced-motion:reduce){
-    #walker,#legs{transition:none !important;animation:none !important;}
-  }
+  :root{--ink:#10243e;--navy:#002855;--blue:#005eb8;--gold:#ffcc00;--dist:#d66b2c;--disp:#07847b;--paper:#fff;--line:#d9e3ef;--muted:#5f7084;}
+  *{box-sizing:border-box;}html,body{margin:0;padding:0;}
+  body{font-family:"Lato",system-ui,sans-serif;color:var(--ink);background:#f4f7fb;min-height:100vh;padding:clamp(1rem,3.5vw,2.5rem);display:flex;flex-direction:column;align-items:center;}
+  .wrap{width:100%;max-width:1120px;}
+  .course-banner{background:var(--navy);color:white;border-top:10px solid var(--gold);padding:clamp(1.35rem,3vw,2.15rem);margin-bottom:1.45rem;box-shadow:0 10px 24px rgba(0,40,85,.16);}
+  .instructor{margin:0 0 .35rem;font-size:clamp(1.35rem,3vw,2rem);font-weight:900;}.course-label{margin:0 0 1.1rem;font-family:"Roboto Mono",monospace;font-size:.78rem;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--gold);}
+  h1{margin:0;color:white;font-size:clamp(2rem,5vw,3.5rem);line-height:1.05;letter-spacing:-.035em;font-weight:900;}h1 .vs{color:var(--gold);}.activity-id{margin:.65rem 0 0;font-family:"Roboto Mono",monospace;font-size:.8rem;letter-spacing:.08em;color:#c7d9ed;}
+  .student-row{display:flex;align-items:flex-end;gap:.8rem;flex-wrap:wrap;margin:-.2rem 0 1.25rem;padding:.8rem 0;border-bottom:1px solid var(--line);}.student-field{display:flex;flex-direction:column;gap:.3rem;}.student-row label,.submission label{font-weight:800;color:var(--navy);}.student-row input{width:min(310px,100%);font:inherit;color:var(--ink);background:white;border:1px solid #9db1c8;border-radius:4px;padding:.6rem .7rem;outline:none;}.student-row input:focus,.submission textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,94,184,.15);}.privacy-note,.submit-status{flex-basis:100%;margin:.1rem 0 0;font-size:.8rem;color:var(--muted);}.submit-status{min-height:1.2em;font-weight:700;color:var(--navy);}
+  .lede{font-size:1.05rem;max-width:76ch;margin:0 0 1.4rem;line-height:1.6;color:#3e5269;}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:1.1rem;}.bubble{background:white;border:1px solid var(--line);padding:.8rem 1rem;text-align:center;box-shadow:0 6px 16px rgba(0,40,85,.07);}.bubble .k{font-family:"Roboto Mono",monospace;font-size:.75rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;font-weight:600;}.bubble .v{font-weight:900;font-size:2rem;line-height:1.2;font-variant-numeric:tabular-nums;}.bubble.p .v{color:var(--blue);}.bubble.d .v{color:var(--dist);}.bubble.s .v{color:var(--disp);}
+  .stage-frame{border:1px solid #173e68;overflow:hidden;box-shadow:0 12px 30px rgba(0,40,85,.15);margin-bottom:1.15rem;background:var(--navy);}.stage-frame svg{width:100%;height:auto;display:block;}
+  #walker>*{display:none;}#walker .position-marker{display:block;}
+  .controls{display:flex;gap:.7rem;justify-content:center;flex-wrap:wrap;margin-bottom:1rem;}button{font-family:"Lato",sans-serif;font-weight:800;font-size:.98rem;cursor:pointer;color:white;background:var(--blue);border:1px solid #004f9e;border-radius:7px;padding:.65rem 1.15rem;min-width:140px;box-shadow:0 5px 12px rgba(0,67,133,.18);}button:hover{background:#004f9e;}button:active{transform:translateY(1px);}button:focus-visible{outline:4px dashed var(--blue);outline-offset:3px;}button.ghost{background:white;color:var(--navy);border-color:#9db1c8;}.download{background:var(--gold);border-color:#d4a900;color:var(--navy);}.download:hover{background:#e9b900;}
+  .legend{display:flex;gap:1.6rem;justify-content:center;flex-wrap:wrap;font-size:.98rem;margin-bottom:1.35rem;font-weight:700;}.legend span{display:inline-flex;align-items:center;gap:.5rem;}.worm{width:34px;height:6px;display:inline-block;}.worm.d{background:var(--dist);}.worm.s{background:var(--disp);}
+  .note,.submission{margin-top:1.25rem;padding:1rem 0 1.1rem;border-top:2px solid var(--navy);border-bottom:1px solid var(--line);font-size:1rem;line-height:1.65;}.note h2,.submission h2{margin:0 0 .4rem;color:var(--navy);font-size:1.15rem;}.note p{margin:0;}.note b{color:var(--dist);}.note i{color:var(--disp);font-style:normal;font-weight:700;}.submission textarea{width:100%;min-height:95px;resize:vertical;font:inherit;line-height:1.5;color:var(--ink);background:white;border:1px solid #9db1c8;border-radius:4px;padding:.7rem;outline:none;}.submission-actions{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:.8rem;}.final-status{min-height:1.3em;margin:.65rem 0 0;font-weight:700;color:var(--navy);}
+  footer{margin-top:1.8rem;padding-top:1rem;border-top:1px solid var(--line);font-family:"Roboto Mono",monospace;font-size:.8rem;color:var(--muted);}
+  @media(max-width:600px){.stats{grid-template-columns:1fr;}.student-row{align-items:flex-start;flex-direction:column;}.student-row input{width:100%;}button{flex:1;min-width:0;}}
+  @media(prefers-reduced-motion:reduce){#walker{transition:none!important;}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <p class="eyebrow">Dynamics in Motion · Concept 01</p>
-  <h1>Distance <span class="vs">vs</span> Displacement</h1>
-  <p class="lede">Move Pip along the number line and compare the total path traveled with the change between the starting and final positions.</p>
+  <header class="course-banner">
+    <p class="instructor">Dr. Nuha Aljuneidi</p>
+    <p class="course-label">Dynamics in Motion · Mechanical Engineering</p>
+    <h1>Distance <span class="vs">and</span> Displacement</h1>
+    <p class="activity-id">ACTIVITY 01</p>
+  </header>
+  <div class="student-row">
+    <div class="student-field"><label for="studentName">Student name</label><input id="studentName" type="text" autocomplete="name" placeholder="Write your full name" required></div>
+    <div class="student-field"><label for="studentEmail">Email <span style="font-weight:400;color:var(--muted)">(optional)</span></label><input id="studentEmail" type="email" autocomplete="email" placeholder="name@example.com"></div>
+    <button id="startActivity" type="button">Start Activity</button>
+    <p class="privacy-note">Your name, optional email, activity, and start time will be recorded in the instructor's Google Sheet.</p>
+    <p id="submitStatus" class="submit-status" role="status" aria-live="polite"></p>
+  </div>
+  <p class="lede">Move the position marker along the number line and compare the total path traveled with the change between the initial and final positions.</p>
 
   <div class="stats">
     <div class="bubble p"><div class="k">Current position</div><div class="v" id="pos">+2 m</div></div>
@@ -131,7 +50,7 @@
   </div>
 
   <div class="stage-frame">
-    <svg id="stage" viewBox="0 0 760 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A cartoon scene: Pip the character walks on a number line. A wiggly path shows total distance, a straight arrow shows displacement.">
+    <svg id="stage" viewBox="0 0 760 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A calibrated position track showing total distance and displacement.">
       <defs>
         <marker id="ah" markerWidth="12" markerHeight="12" refX="7" refY="5" orient="auto">
           <path d="M0,0 L11,5 L0,10 Z" fill="#008c95" stroke="#1c2b57" stroke-width="1"/>
@@ -139,23 +58,24 @@
       </defs>
 
       <!-- sky -->
-      <rect x="0" y="0" width="760" height="230" fill="#eef4fa"/>
+      <rect x="0" y="0" width="760" height="230" fill="#002855"/>
+      <text x="36" y="36" fill="#7fc9ff" font-family="Roboto Mono,monospace" font-size="13" letter-spacing="1.5">ONE-DIMENSIONAL POSITION TRACK</text>
       <!-- sun -->
-      <circle cx="680" cy="55" r="34" fill="#ffcb06" stroke="#1c2b57" stroke-width="4"/>
-      <g stroke="#ffcb06" stroke-width="5" stroke-linecap="round">
+      <circle cx="680" cy="55" r="34" fill="#ffcb06" stroke="#1c2b57" stroke-width="4" opacity="0"/>
+      <g stroke="#ffcb06" stroke-width="5" stroke-linecap="round" opacity="0">
         <line x1="680" y1="4" x2="680" y2="-6"/>
         <line x1="726" y1="30" x2="736" y2="22"/>
         <line x1="634" y1="30" x2="624" y2="22"/>
       </g>
       <!-- clouds -->
-      <g fill="#ffffff" stroke="#1c2b57" stroke-width="3">
+      <g fill="#ffffff" stroke="#1c2b57" stroke-width="3" opacity="0">
         <g transform="translate(120,55)"><ellipse cx="0" cy="0" rx="34" ry="20"/><ellipse cx="30" cy="6" rx="26" ry="16"/><ellipse cx="-28" cy="8" rx="22" ry="14"/></g>
         <g transform="translate(420,40)"><ellipse cx="0" cy="0" rx="28" ry="17"/><ellipse cx="26" cy="5" rx="22" ry="14"/></g>
       </g>
 
       <!-- ground -->
-      <rect x="0" y="230" width="760" height="70" fill="#dce6ef"/>
-      <rect x="0" y="230" width="760" height="10" fill="#03539e"/>
+      <rect x="0" y="230" width="760" height="70" fill="#eaf0f7"/>
+      <rect x="0" y="230" width="760" height="7" fill="#ffcc00"/>
 
       <!-- displacement arrow lane (in the sky) -->
       <line id="dispArrow" x1="380" y1="120" x2="380" y2="120" stroke="#008c95" stroke-width="6" marker-end="url(#ah)" opacity="0"/>
@@ -188,6 +108,11 @@
         <path d="M370,196 Q380,204 390,196" fill="none" stroke="#2a2320" stroke-width="3" stroke-linecap="round"/>
         <!-- little cap -->
         <path d="M356,172 Q380,150 404,172 Z" fill="#d9633b" stroke="#1c2b57" stroke-width="4" stroke-linejoin="round"/>
+        <g class="position-marker">
+          <line x1="380" y1="168" x2="380" y2="228" stroke="#7fc9ff" stroke-width="3"/>
+          <circle cx="380" cy="154" r="14" fill="#ffcc00" stroke="#ffffff" stroke-width="3"/>
+          <path d="M370 176 L380 188 L390 176 Z" fill="#ffcc00"/>
+        </g>
       </g>
     </svg>
   </div>
@@ -199,17 +124,29 @@
   </div>
 
   <div class="legend">
-    <span><i class="worm d"></i> wiggly path = distance</span>
+    <span><i class="worm d"></i> traveled path = distance</span>
     <span><i class="worm s"></i> straight arrow = displacement</span>
   </div>
 
-  <div class="note">
-    <b>Distance</b> is a scalar — it only ever grows, counting every metre Pip walks no matter the direction.
-    <i>Displacement</i> is a vector — final spot minus starting spot, so it can be positive, negative, or even zero!
-    Try walking Pip three steps right, then three back: distance says 6 m, but displacement pops right back to 0.
-  </div>
+  <section class="note" aria-labelledby="interpret-heading">
+    <h2 id="interpret-heading">Interpreting the Motion</h2>
+    <p><b>Distance</b> is a scalar that accumulates every metre traveled, regardless of direction.
+    <i>Displacement</i> is the signed change in position: final position minus initial position. Move three metres right and three metres left; the distance is 6 m while the displacement returns to 0 m.</p>
+  </section>
 
-  <footer>Dynamics in Motion · Created by Dr. Nuha Aljuneidi</footer>
+  <section class="submission" aria-labelledby="record-heading">
+    <h2 id="record-heading">Engineering Record</h2>
+    <p>Explain how your final distance and displacement values differ.</p>
+    <label for="studentNotes">Interpretation</label>
+    <textarea id="studentNotes" placeholder="Describe the path, final position, distance, and displacement."></textarea>
+    <div class="submission-actions">
+      <button id="submitWork" type="button">Submit My Work</button>
+      <button id="downloadSolution" class="download" type="button">Download Solution Image</button>
+    </div>
+    <p id="finalStatus" class="final-status" role="status" aria-live="polite"></p>
+  </section>
+
+  <footer>Dynamics in Motion · Developed by Dr. Nuha Aljuneidi</footer>
 </div>
 
 <script>
@@ -225,14 +162,14 @@
     var ln=document.createElementNS(NS,"line");
     ln.setAttribute("x1",x);ln.setAttribute("x2",x);
     ln.setAttribute("y1",axisY-7);ln.setAttribute("y2",axisY+7);
-    ln.setAttribute("stroke","#1c2b57");ln.setAttribute("stroke-width","3");
+    ln.setAttribute("stroke","#10243e");ln.setAttribute("stroke-width","3");
     ticks.appendChild(ln);
     var tx=document.createElementNS(NS,"text");
     tx.setAttribute("x",x);tx.setAttribute("y",axisY+30);
     tx.setAttribute("text-anchor","middle");
     tx.setAttribute("font-family","Lato, sans-serif");
     tx.setAttribute("font-weight","700");
-    tx.setAttribute("font-size","16");tx.setAttribute("fill","#1c2b57");
+    tx.setAttribute("font-size","16");tx.setAttribute("fill","#10243e");
     tx.textContent=(p>0?"+"+p:p);
     ticks.appendChild(tx);
   }
@@ -240,18 +177,12 @@
   var walker=document.getElementById("walker"),
       traceEl=document.getElementById("trace"),
       arrow=document.getElementById("dispArrow"),
-      arrowLbl=document.getElementById("dispLabel"),
-      pupilL=document.getElementById("pupilL"),
-      pupilR=document.getElementById("pupilR");
+      arrowLbl=document.getElementById("dispLabel");
 
   function fmt(v){ return (v>0?"+"+v:""+v)+" m"; }
 
   function render(dir){
     walker.style.transform="translateX("+(px(pos)-380)+"px)";
-    // eyes glance the way Pip is heading
-    var gx = dir===undefined?0:(dir>0?1.6:-1.6);
-    pupilL.setAttribute("cx",374+gx); pupilR.setAttribute("cx",390+gx);
-
     document.getElementById("pos").textContent=fmt(pos);
     document.getElementById("dist").textContent=dist+" m";
     var disp=pos-start;
@@ -295,7 +226,57 @@
     pos=2;start=2;dist=0;trace=[2];render();
   });
   document.addEventListener("keydown",function(e){
+    if(e.target.matches("input,textarea"))return;
     if(e.key==="ArrowLeft"){step(-1);} else if(e.key==="ArrowRight"){step(1);}
+  });
+
+  var LOGGER_URL="https://script.google.com/macros/s/AKfycbwmh8vX2n26GHHKq9yIGjy3fanmZ_XQddXHSH3RmrtV3HdhrpO27E3zZvXswCfN9QRpXg/exec";
+  function payload(action){
+    return new URLSearchParams({
+      action:action,
+      studentName:document.getElementById("studentName").value.trim(),
+      email:document.getElementById("studentEmail").value.trim(),
+      activity:"Distance and Displacement — Activity 01",
+      scenario:"Initial +2 m to final "+fmt(pos),
+      displacement:String(pos-start),
+      distance:String(dist),
+      notes:document.getElementById("studentNotes").value.trim()
+    });
+  }
+  function validateStudent(status){
+    var name=document.getElementById("studentName").value.trim();
+    var email=document.getElementById("studentEmail");
+    if(!name){status.textContent="Please enter your name first.";document.getElementById("studentName").focus();return false;}
+    if(email.value.trim()&&!email.checkValidity()){status.textContent="Please check the email address or leave it blank.";return false;}
+    return true;
+  }
+  document.getElementById("startActivity").addEventListener("click",async function(){
+    var status=document.getElementById("submitStatus");if(!validateStudent(status))return;
+    var button=this;button.disabled=true;button.textContent="Recording…";status.textContent="Connecting to the activity log…";
+    try{await fetch(LOGGER_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:payload("start")});status.textContent="Activity started. Your information was recorded.";button.textContent="Activity Started";}
+    catch(error){status.textContent="The activity could not be recorded. Check your connection and try again.";button.disabled=false;button.textContent="Start Activity";}
+  });
+  document.getElementById("submitWork").addEventListener("click",async function(){
+    var status=document.getElementById("finalStatus");if(!validateStudent(status))return;
+    var button=this;button.disabled=true;button.textContent="Submitting…";status.textContent="Sending your final results…";
+    try{await fetch(LOGGER_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:payload("complete")});status.textContent="Work submitted. Your completion time and final results were recorded.";button.textContent="Work Submitted";}
+    catch(error){status.textContent="Submission failed. Check your connection and try again.";button.disabled=false;button.textContent="Submit My Work";}
+  });
+  function drawStage(ctx,x,y,w,h){return new Promise(function(resolve,reject){var source=new XMLSerializer().serializeToString(document.getElementById("stage"));var blob=new Blob([source],{type:"image/svg+xml;charset=utf-8"});var url=URL.createObjectURL(blob),img=new Image();img.onload=function(){ctx.drawImage(img,x,y,w,h);URL.revokeObjectURL(url);resolve();};img.onerror=function(){URL.revokeObjectURL(url);reject(new Error("Stage image failed"));};img.src=url;});}
+  function wrapText(ctx,text,x,y,maxWidth,lineHeight,maxLines){var words=(text||"No interpretation provided.").split(/\s+/),line="",lines=0;for(var i=0;i<words.length;i++){var test=line?line+" "+words[i]:words[i];if(ctx.measureText(test).width>maxWidth&&line){ctx.fillText(line,x,y+lines*lineHeight);lines++;line=words[i];if(lines>=maxLines)break;}else line=test;}if(lines<maxLines&&line)ctx.fillText(line,x,y+lines*lineHeight);}
+  document.getElementById("downloadSolution").addEventListener("click",async function(){
+    var status=document.getElementById("finalStatus");if(!validateStudent(status))return;var button=this;button.disabled=true;button.textContent="Creating Image…";
+    try{
+      var name=document.getElementById("studentName").value.trim(),canvas=document.createElement("canvas");canvas.width=1600;canvas.height=1000;var ctx=canvas.getContext("2d");
+      ctx.fillStyle="#fff";ctx.fillRect(0,0,1600,1000);ctx.fillStyle="#ffcc00";ctx.fillRect(0,0,1600,14);ctx.fillStyle="#002855";ctx.fillRect(0,14,1600,180);
+      ctx.fillStyle="#fff";ctx.font="700 34px Lato,Arial";ctx.fillText("Dr. Nuha Aljuneidi",60,72);ctx.fillStyle="#ffcc00";ctx.font="700 20px Lato,Arial";ctx.fillText("DYNAMICS IN MOTION · DISTANCE AND DISPLACEMENT",60,112);ctx.fillStyle="#fff";ctx.font="700 44px Lato,Arial";ctx.fillText("Student Solution Record",60,165);
+      ctx.fillStyle="#10243e";ctx.font="700 24px Lato,Arial";ctx.fillText("Student: "+name,60,238);ctx.font="20px Lato,Arial";ctx.fillText("Date: "+new Date().toLocaleString(),60,275);ctx.fillText("Activity 01",1260,238);
+      await drawStage(ctx,110,315,1380,545);
+      ctx.fillStyle="#002855";ctx.font="700 25px Lato,Arial";ctx.fillText("Final Results",60,900);ctx.fillStyle="#10243e";ctx.font="21px Lato,Arial";ctx.fillText("Position: "+fmt(pos),250,900);ctx.fillText("Distance: "+dist+" m",520,900);ctx.fillText("Displacement: "+fmt(pos-start),790,900);
+      ctx.fillStyle="#334b64";ctx.font="18px Lato,Arial";wrapText(ctx,document.getElementById("studentNotes").value.trim(),60,940,1460,24,2);
+      ctx.fillStyle="#002855";ctx.fillRect(0,972,1600,28);ctx.fillStyle="#fff";ctx.font="14px Lato,Arial";ctx.fillText("Dynamics in Motion · Developed by Dr. Nuha Aljuneidi",60,992);
+      var a=document.createElement("a");a.download="distance-displacement-solution-"+name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")+".png";a.href=canvas.toDataURL("image/png");a.click();status.textContent="Solution image downloaded.";
+    }catch(error){status.textContent="The solution image could not be created. Please try again.";}finally{button.disabled=false;button.textContent="Download Solution Image";}
   });
 
   render();
