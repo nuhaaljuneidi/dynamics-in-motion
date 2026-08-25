@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Motion Graph Translator | Dr. Nuha Aljuneidi</title>
-<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Roboto+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;600&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --ink:#10243e;
@@ -15,81 +15,78 @@
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
-    font-family:"Lato",system-ui,sans-serif;color:var(--ink);
+    font-family:"Source Sans 3",system-ui,sans-serif;color:var(--ink);
     background-color:#f4f7fb;
     min-height:100vh;padding:clamp(1rem,3.5vw,2.5rem);
     display:flex;flex-direction:column;align-items:center;
   }
   .wrap{width:100%;max-width:1120px;}
-  .course-banner{background:var(--navy);color:white;border-top:10px solid var(--gold);padding:clamp(1.35rem,3vw,2.15rem);
-     margin-bottom:1.45rem;box-shadow:0 10px 24px rgba(0,40,85,.16);}
-  .course-banner .instructor{margin:0 0 .35rem;font-size:clamp(1.35rem,3vw,2rem);font-weight:900;letter-spacing:.015em;color:white;}
-  .course-banner .course-label{margin:0 0 1.1rem;font-family:"Roboto Mono",monospace;font-size:.78rem;font-weight:600;
+  .course-banner{background:var(--navy);color:white;border-top:6px solid var(--gold);padding:clamp(1.25rem,2.5vw,1.75rem);
+     margin-bottom:1.45rem;}
+  .course-banner .instructor{margin:0 0 .3rem;font-size:clamp(1.25rem,2.5vw,1.65rem);font-weight:700;letter-spacing:.01em;color:white;}
+  .course-banner .course-label{margin:0 0 .9rem;font-family:"Source Code Pro",monospace;font-size:.75rem;font-weight:600;
      letter-spacing:.13em;text-transform:uppercase;color:var(--gold);}
   .course-banner h1{margin:0;color:white;}
-  .course-banner h1 .hl{color:var(--gold);}
-  .course-banner .activity-id{margin:.65rem 0 0;font-family:"Roboto Mono",monospace;font-size:.8rem;letter-spacing:.08em;color:#c7d9ed;}
+  .course-banner h1 .hl{color:white;}
+  .course-banner .activity-id{margin:.55rem 0 0;font-family:"Source Code Pro",monospace;font-size:.76rem;letter-spacing:.08em;color:var(--gold);}
   .student-row{display:flex;align-items:flex-end;gap:.8rem;flex-wrap:wrap;margin:-.2rem 0 1.25rem;padding:.8rem 0;border-bottom:1px solid var(--line);}
   .student-field{display:flex;flex-direction:column;gap:.3rem;}
   .student-row label{font-weight:800;color:var(--navy);white-space:nowrap;}
-  .student-row input{width:min(310px,100%);font:inherit;color:var(--ink);background:white;border:1px solid #9db1c8;border-radius:4px;
+  .student-row input{width:min(310px,100%);font:inherit;color:var(--ink);background:white;border:1px solid #9db1c8;border-radius:2px;
      padding:.6rem .7rem;outline:none;}
   .student-row input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,94,184,.15);}
   .student-row button{min-width:145px;margin-bottom:0;}
   .privacy-note{flex-basis:100%;margin:.15rem 0 0;font-size:.78rem;color:var(--muted);}
   .submit-status{flex-basis:100%;min-height:1.2em;margin:0;font-size:.86rem;font-weight:700;color:var(--navy);}
-  .eyebrow{font-family:"Roboto Mono",monospace;font-size:.82rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);margin:0 0 .65rem;}
-  h1{font-weight:900;line-height:1.05;margin:0 0 .65rem;font-size:clamp(2rem,5vw,3.5rem);color:var(--navy);letter-spacing:-.035em;}
+  .eyebrow{font-family:"Source Code Pro",monospace;font-size:.82rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin:0 0 .65rem;}
+  h1{font-weight:700;line-height:1.08;margin:0 0 .6rem;font-size:clamp(1.85rem,4.2vw,2.9rem);color:var(--navy);letter-spacing:-.02em;}
   h1 .hl{display:inline-block;color:var(--blue);font-size:1em;}
-  .byline{font-family:"Roboto Mono",monospace;font-size:.9rem;color:var(--muted);margin:0 0 1rem;}
+  .byline{font-family:"Source Code Pro",monospace;font-size:.86rem;color:var(--muted);margin:0 0 1rem;}
   .byline strong{color:var(--navy);}
   .lede{font-size:1.05rem;max-width:72ch;margin:0 0 1.5rem;line-height:1.6;color:#3e5269;}
 
   /* scene */
-  .stage-frame{border:1px solid #173e68;border-radius:12px;overflow:hidden;
-     box-shadow:0 12px 30px rgba(0,40,85,.15);margin-bottom:1.25rem;background:var(--navy);}
+  .stage-frame{border:1px solid #173e68;border-radius:2px;overflow:hidden;
+     box-shadow:0 4px 12px rgba(0,40,85,.08);margin-bottom:1.25rem;background:var(--navy);}
   .stage-frame svg{width:100%;height:auto;display:block;}
 
   /* graphs row */
   .graphs{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.2rem;}
-  .card{background:var(--paper);border:1px solid var(--line);border-radius:12px;
-     box-shadow:0 8px 22px rgba(0,40,85,.09);padding:1rem .9rem .7rem;}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:2px;
+     box-shadow:none;padding:1rem .9rem .7rem;}
   .card h2{margin:0 0 .1rem;font-size:1.15rem;font-weight:800;display:flex;align-items:center;gap:.4rem;}
-  .card .tag{font-family:"Roboto Mono",monospace;font-size:.78rem;color:var(--muted);margin:0 0 .3rem;}
+  .card .tag{font-family:"Source Code Pro",monospace;font-size:.76rem;color:var(--muted);margin:0 0 .3rem;}
   .dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--ink);display:inline-block;}
   .card.pos h2 .dot{background:var(--pos);}
   .card.vel h2 .dot{background:var(--vel);}
   .card.acc h2 .dot{background:var(--acc);}
   .card.editable{position:relative;}
   .editable-badge{position:absolute;top:-11px;right:12px;background:var(--gold);border:1px solid #d4a900;
-     border-radius:4px;font-family:"Roboto Mono",monospace;font-size:.72rem;font-weight:600;text-transform:uppercase;padding:.22rem .55rem;
-     box-shadow:0 3px 8px rgba(0,0,0,.12);}
+     border-radius:0;font-family:"Source Code Pro",monospace;font-size:.7rem;font-weight:600;text-transform:uppercase;padding:.22rem .55rem;}
   .graph-svg{width:100%;height:auto;display:block;touch-action:none;}
   .card.vel .graph-svg{cursor:grab;}
 
   /* controls */
   .controls{display:flex;gap:.7rem;justify-content:center;flex-wrap:wrap;margin-bottom:1rem;align-items:center;}
   .readouts{display:grid;grid-template-columns:repeat(6,1fr);gap:.55rem;margin:0 0 1rem;}
-  .readout{background:var(--paper);border:3px solid var(--ink);border-radius:14px;padding:.5rem .45rem;text-align:center;
-     box-shadow:3px 4px 0 rgba(0,0,0,.14);}
-  .readout span{display:block;font-family:"Gochi Hand",cursive;color:#6f6861;font-size:.9rem;}
+  .readout{background:var(--paper);border:1px solid var(--line);border-radius:2px;padding:.55rem .45rem;text-align:center;}
+  .readout span{display:block;font-family:"Source Code Pro",monospace;color:var(--muted);font-size:.76rem;text-transform:uppercase;letter-spacing:.03em;}
   .readout strong{display:block;font-size:1.05rem;line-height:1.15;}
-  button{font-family:"Lato",sans-serif;font-weight:800;font-size:.98rem;cursor:pointer;color:white;
-     background:var(--blue);border:1px solid #004f9e;border-radius:7px;padding:.65rem 1.15rem;min-width:120px;
-     box-shadow:0 5px 12px rgba(0,67,133,.18);transition:transform .12s,box-shadow .12s,background .15s;}
-  button:hover{background:#004f9e;transform:translateY(-1px);}
-  button:active{transform:translateY(1px);box-shadow:0 2px 5px rgba(0,67,133,.18);}
+  button{font-family:"Source Sans 3",sans-serif;font-weight:700;font-size:.96rem;cursor:pointer;color:white;
+     background:var(--blue);border:1px solid #004f9e;border-radius:2px;padding:.62rem 1.1rem;min-width:120px;
+     box-shadow:none;transition:background .15s;}
+  button:hover{background:#004f9e;}
+  button:active{background:#003f7d;}
   button:focus-visible{outline:4px dashed var(--pos);outline-offset:3px;}
   button.play{background:var(--navy);}button.play:hover{background:#001d3d;}
   button.ghost{background:var(--paper);color:var(--navy);border-color:#9db1c8;min-width:auto;font-size:.95rem;}
 
   .presets{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;justify-content:center;margin-bottom:1.6rem;}
-  .presets .lbl{font-family:"Roboto Mono",monospace;font-size:.82rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
-  .chip{font-family:"Lato";font-weight:700;font-size:.88rem;cursor:pointer;background:var(--paper);color:var(--navy);
-     border:1px solid #9db1c8;border-radius:18px;padding:.38rem .9rem;box-shadow:none;
-     transition:transform .07s,box-shadow .07s,background .15s;}
+  .presets .lbl{font-family:"Source Code Pro",monospace;font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);}
+  .chip{font-family:"Source Sans 3";font-weight:600;font-size:.88rem;cursor:pointer;background:var(--paper);color:var(--navy);
+     border:1px solid #9db1c8;border-radius:2px;padding:.38rem .9rem;box-shadow:none;transition:background .15s;}
   .chip:hover{background:#fff3cf;}
-  .chip:active{transform:translate(2px,3px);box-shadow:0 0 0 rgba(0,0,0,.15);}
+  .chip:active{background:#f6e9bd;}
 
   .note{margin-top:1.5rem;padding:1rem 0 1.1rem;border-top:2px solid var(--navy);border-bottom:1px solid var(--line);
      font-size:1rem;line-height:1.65;}
@@ -103,13 +100,13 @@
   .submission p{margin:.25rem 0 .8rem;color:#3e5269;}
   .submission label{display:block;margin-bottom:.35rem;font-weight:800;color:var(--navy);}
   .submission textarea{width:100%;min-height:95px;resize:vertical;font:inherit;line-height:1.5;color:var(--ink);background:white;
-     border:1px solid #9db1c8;border-radius:4px;padding:.7rem;outline:none;}
+     border:1px solid #9db1c8;border-radius:2px;padding:.7rem;outline:none;}
   .submission textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,94,184,.15);}
   .submission-actions{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:.8rem;}
   .submission-actions .download{background:var(--gold);border-color:#d4a900;color:var(--navy);}
   .submission-actions .download:hover{background:#e9b900;}
   .final-status{min-height:1.3em;margin:.65rem 0 0!important;font-weight:700;color:var(--navy)!important;}
-  footer{margin-top:1.8rem;padding-top:1rem;border-top:1px solid var(--line);font-family:"Roboto Mono",monospace;font-size:.8rem;color:var(--muted);}
+  footer{margin-top:1.8rem;padding-top:1rem;border-top:1px solid var(--line);font-family:"Source Code Pro",monospace;font-size:.78rem;color:var(--muted);}
 
   @media (max-width:760px){.graphs{grid-template-columns:1fr;}.readouts{grid-template-columns:repeat(2,1fr);} button{flex:1;min-width:0;}.student-row{align-items:flex-start;flex-direction:column;gap:.4rem;}.student-row input{width:100%;}}
   @media (prefers-reduced-motion:reduce){#car{transition:none !important;}}
@@ -143,8 +140,8 @@
     <svg viewBox="0 0 900 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A motion cart traveling along a calibrated linear track; its position matches the position graph.">
       <defs><pattern id="techGrid" width="30" height="30" patternUnits="userSpaceOnUse"><path d="M30 0H0V30" fill="none" stroke="#1d4f7d" stroke-width="1"/></pattern></defs>
       <rect width="900" height="180" fill="#002855"/><rect width="900" height="180" fill="url(#techGrid)"/>
-      <text x="42" y="32" fill="#7fc9ff" font-family="Roboto Mono,monospace" font-size="13" letter-spacing="1.5">LINEAR MOTION TRACK</text>
-      <text x="858" y="32" fill="#7fc9ff" font-family="Roboto Mono,monospace" font-size="12" text-anchor="end">s(t)</text>
+      <text x="42" y="32" fill="#7fc9ff" font-family="Source Code Pro,monospace" font-size="13" letter-spacing="1.5">LINEAR MOTION TRACK</text>
+      <text x="858" y="32" fill="#7fc9ff" font-family="Source Code Pro,monospace" font-size="12" text-anchor="end">s(t)</text>
       <line x1="40" y1="142" x2="860" y2="142" stroke="#8bb8dc" stroke-width="3"/>
       <line x1="40" y1="153" x2="860" y2="153" stroke="#315f88" stroke-width="1"/>
       <g id="roadticks"></g>
@@ -288,7 +285,7 @@
       svg.appendChild(el("line",{x1:GX0,y1:yz,x2:GX1,y2:yz,stroke:"#c9c3b4","stroke-width":1.5,"stroke-dasharray":"4 4"}));
     }
     // t label
-    var tl=el("text",{x:(GX0+GX1)/2,y:180,"text-anchor":"middle","font-family":"Gochi Hand,cursive","font-size":15,fill:"#7a736c"});
+    var tl=el("text",{x:(GX0+GX1)/2,y:180,"text-anchor":"middle","font-family":"Source Code Pro,monospace","font-size":12,fill:"#5f7084"});
     tl.textContent="time (s) →"; svg.appendChild(tl);
     // simple y ticks at lo, 0, hi
     [lo,0,hi].forEach(function(val){
@@ -602,11 +599,11 @@
       ctx.fillStyle="#ffffff";ctx.fillRect(0,0,1600,1080);
       ctx.fillStyle="#ffcc00";ctx.fillRect(0,0,1600,14);
       ctx.fillStyle="#002855";ctx.fillRect(0,14,1600,180);
-      ctx.fillStyle="#ffffff";ctx.font="700 34px Lato,Arial";ctx.fillText("Dr. Nuha Aljuneidi",60,72);
-      ctx.fillStyle="#ffcc00";ctx.font="700 20px Lato,Arial";ctx.fillText("DYNAMICS IN MOTION · MOTION GRAPH TRANSLATOR",60,112);
-      ctx.fillStyle="#ffffff";ctx.font="700 44px Lato,Arial";ctx.fillText("Student Solution Record",60,165);
-      ctx.fillStyle="#10243e";ctx.font="700 24px Lato,Arial";ctx.fillText("Student: "+name,60,240);
-      ctx.font="20px Lato,Arial";ctx.fillText("Date: "+new Date().toLocaleString(),60,275);
+      ctx.fillStyle="#ffffff";ctx.font="700 34px 'Source Sans 3',Arial";ctx.fillText("Dr. Nuha Aljuneidi",60,72);
+      ctx.fillStyle="#ffcc00";ctx.font="600 20px 'Source Sans 3',Arial";ctx.fillText("DYNAMICS IN MOTION · MOTION GRAPH TRANSLATOR",60,112);
+      ctx.fillStyle="#ffffff";ctx.font="700 44px 'Source Sans 3',Arial";ctx.fillText("Student Solution Record",60,165);
+      ctx.fillStyle="#10243e";ctx.font="700 24px 'Source Sans 3',Arial";ctx.fillText("Student: "+name,60,240);
+      ctx.font="20px 'Source Sans 3',Arial";ctx.fillText("Date: "+new Date().toLocaleString(),60,275);
       ctx.fillText("Scenario: "+currentScenario,800,240);
       ctx.fillText("Activity 02",800,275);
       ctx.strokeStyle="#d9e3ef";ctx.lineWidth=2;ctx.strokeRect(45,305,1510,440);
@@ -615,18 +612,18 @@
         drawSvgOnCanvas(ctx,document.getElementById("gVel"),570,335,460,380),
         drawSvgOnCanvas(ctx,document.getElementById("gAcc"),1075,335,460,380)
       ]);
-      ctx.fillStyle="#002855";ctx.font="700 26px Lato,Arial";ctx.fillText("Final Results",60,800);
-      ctx.fillStyle="#10243e";ctx.font="22px Lato,Arial";
+      ctx.fillStyle="#002855";ctx.font="700 26px 'Source Sans 3',Arial";ctx.fillText("Final Results",60,800);
+      ctx.fillStyle="#10243e";ctx.font="22px 'Source Sans 3',Arial";
       ctx.fillText("Position: "+document.getElementById("rPos").textContent,60,842);
       ctx.fillText("Velocity: "+document.getElementById("rVel").textContent,350,842);
       ctx.fillText("Acceleration: "+document.getElementById("rAcc").textContent,650,842);
       ctx.fillText("Displacement: "+document.getElementById("rDisp").textContent,1010,842);
       ctx.fillText("Distance: "+document.getElementById("rDist").textContent,1320,842);
-      ctx.fillStyle="#002855";ctx.font="700 26px Lato,Arial";ctx.fillText("Student Interpretation",60,905);
-      ctx.fillStyle="#334b64";ctx.font="20px Lato,Arial";
+      ctx.fillStyle="#002855";ctx.font="700 26px 'Source Sans 3',Arial";ctx.fillText("Student Interpretation",60,905);
+      ctx.fillStyle="#334b64";ctx.font="20px 'Source Sans 3',Arial";
       wrapCanvasText(ctx,document.getElementById("studentNotes").value.trim(),60,942,1460,30,3);
       ctx.fillStyle="#002855";ctx.fillRect(0,1040,1600,40);
-      ctx.fillStyle="#ffffff";ctx.font="16px Lato,Arial";ctx.fillText("Dynamics in Motion · Developed by Dr. Nuha Aljuneidi",60,1067);
+      ctx.fillStyle="#ffffff";ctx.font="16px 'Source Sans 3',Arial";ctx.fillText("Dynamics in Motion · Developed by Dr. Nuha Aljuneidi",60,1067);
       var link=document.createElement("a");
       link.download="motion-graph-solution-"+name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")+".png";
       link.href=canvas.toDataURL("image/png"); link.click();
@@ -648,7 +645,7 @@
     var sf=document.getElementById("startFlag");
     sf.appendChild(el("line",{x1:CAR0,y1:118,x2:CAR0,y2:150,stroke:"#2a2320","stroke-width":3}));
     sf.appendChild(el("path",{d:"M"+CAR0+",118 l18,6 l-18,6 z",fill:"#12b886",stroke:"#2a2320","stroke-width":2}));
-    var lab=el("text",{x:CAR0,y:172,"text-anchor":"middle","font-family":"Gochi Hand,cursive","font-size":14,fill:"#2a2320"});
+    var lab=el("text",{x:CAR0,y:172,"text-anchor":"middle","font-family":"Source Code Pro,monospace","font-size":11,fill:"#c7d9ed"});
     lab.textContent="start"; sf.appendChild(lab);
   })();
 
