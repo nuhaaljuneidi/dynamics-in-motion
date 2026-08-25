@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Motion Graph Translator | Dr. Nuha Aljuneidi</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Roboto+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#10243e;
+    --navy:#002855; --blue:#005eb8; --cyan:#00a6d6;
+    --pos:#3157a4; --vel:#d66b2c; --acc:#07847b;
+    --gold:#ffcc00; --paper:#ffffff; --line:#d9e3ef; --muted:#5f7084;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"Lato",system-ui,sans-serif;color:var(--ink);
+    background-color:#f4f7fb;
+    min-height:100vh;padding:clamp(1rem,3.5vw,2.5rem);
+    display:flex;flex-direction:column;align-items:center;
+  }
+  .wrap{width:100%;max-width:1120px;}
+  .course-banner{background:var(--navy);color:white;border-top:10px solid var(--gold);padding:clamp(1.35rem,3vw,2.15rem);
+     margin-bottom:1.45rem;box-shadow:0 10px 24px rgba(0,40,85,.16);}
+  .course-banner .instructor{margin:0 0 .35rem;font-size:clamp(1.35rem,3vw,2rem);font-weight:900;letter-spacing:.015em;color:white;}
+  .course-banner .course-label{margin:0 0 1.1rem;font-family:"Roboto Mono",monospace;font-size:.78rem;font-weight:600;
+     letter-spacing:.13em;text-transform:uppercase;color:var(--gold);}
+  .course-banner h1{margin:0;color:white;}
+  .course-banner h1 .hl{color:var(--gold);}
+  .course-banner .activity-id{margin:.65rem 0 0;font-family:"Roboto Mono",monospace;font-size:.8rem;letter-spacing:.08em;color:#c7d9ed;}
+  .student-row{display:flex;align-items:flex-end;gap:.8rem;flex-wrap:wrap;margin:-.2rem 0 1.25rem;padding:.8rem 0;border-bottom:1px solid var(--line);}
+  .student-field{display:flex;flex-direction:column;gap:.3rem;}
+  .student-row label{font-weight:800;color:var(--navy);white-space:nowrap;}
+  .student-row input{width:min(310px,100%);font:inherit;color:var(--ink);background:white;border:1px solid #9db1c8;border-radius:4px;
+     padding:.6rem .7rem;outline:none;}
+  .student-row input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,94,184,.15);}
+  .student-row button{min-width:145px;margin-bottom:0;}
+  .privacy-note{flex-basis:100%;margin:.15rem 0 0;font-size:.78rem;color:var(--muted);}
+  .submit-status{flex-basis:100%;min-height:1.2em;margin:0;font-size:.86rem;font-weight:700;color:var(--navy);}
+  .eyebrow{font-family:"Roboto Mono",monospace;font-size:.82rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);margin:0 0 .65rem;}
+  h1{font-weight:900;line-height:1.05;margin:0 0 .65rem;font-size:clamp(2rem,5vw,3.5rem);color:var(--navy);letter-spacing:-.035em;}
+  h1 .hl{display:inline-block;color:var(--blue);font-size:1em;}
+  .byline{font-family:"Roboto Mono",monospace;font-size:.9rem;color:var(--muted);margin:0 0 1rem;}
+  .byline strong{color:var(--navy);}
+  .lede{font-size:1.05rem;max-width:72ch;margin:0 0 1.5rem;line-height:1.6;color:#3e5269;}
+
+  /* scene */
+  .stage-frame{border:1px solid #173e68;border-radius:12px;overflow:hidden;
+     box-shadow:0 12px 30px rgba(0,40,85,.15);margin-bottom:1.25rem;background:var(--navy);}
+  .stage-frame svg{width:100%;height:auto;display:block;}
+
+  /* graphs row */
+  .graphs{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.2rem;}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:12px;
+     box-shadow:0 8px 22px rgba(0,40,85,.09);padding:1rem .9rem .7rem;}
+  .card h2{margin:0 0 .1rem;font-size:1.15rem;font-weight:800;display:flex;align-items:center;gap:.4rem;}
+  .card .tag{font-family:"Roboto Mono",monospace;font-size:.78rem;color:var(--muted);margin:0 0 .3rem;}
+  .dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--ink);display:inline-block;}
+  .card.pos h2 .dot{background:var(--pos);}
+  .card.vel h2 .dot{background:var(--vel);}
+  .card.acc h2 .dot{background:var(--acc);}
+  .card.editable{position:relative;}
+  .editable-badge{position:absolute;top:-11px;right:12px;background:var(--gold);border:1px solid #d4a900;
+     border-radius:4px;font-family:"Roboto Mono",monospace;font-size:.72rem;font-weight:600;text-transform:uppercase;padding:.22rem .55rem;
+     box-shadow:0 3px 8px rgba(0,0,0,.12);}
+  .graph-svg{width:100%;height:auto;display:block;touch-action:none;}
+  .card.vel .graph-svg{cursor:grab;}
+
+  /* controls */
+  .controls{display:flex;gap:.7rem;justify-content:center;flex-wrap:wrap;margin-bottom:1rem;align-items:center;}
+  .readouts{display:grid;grid-template-columns:repeat(6,1fr);gap:.55rem;margin:0 0 1rem;}
+  .readout{background:var(--paper);border:3px solid var(--ink);border-radius:14px;padding:.5rem .45rem;text-align:center;
+     box-shadow:3px 4px 0 rgba(0,0,0,.14);}
+  .readout span{display:block;font-family:"Gochi Hand",cursive;color:#6f6861;font-size:.9rem;}
+  .readout strong{display:block;font-size:1.05rem;line-height:1.15;}
+  button{font-family:"Lato",sans-serif;font-weight:800;font-size:.98rem;cursor:pointer;color:white;
+     background:var(--blue);border:1px solid #004f9e;border-radius:7px;padding:.65rem 1.15rem;min-width:120px;
+     box-shadow:0 5px 12px rgba(0,67,133,.18);transition:transform .12s,box-shadow .12s,background .15s;}
+  button:hover{background:#004f9e;transform:translateY(-1px);}
+  button:active{transform:translateY(1px);box-shadow:0 2px 5px rgba(0,67,133,.18);}
+  button:focus-visible{outline:4px dashed var(--pos);outline-offset:3px;}
+  button.play{background:var(--navy);}button.play:hover{background:#001d3d;}
+  button.ghost{background:var(--paper);color:var(--navy);border-color:#9db1c8;min-width:auto;font-size:.95rem;}
+
+  .presets{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;justify-content:center;margin-bottom:1.6rem;}
+  .presets .lbl{font-family:"Roboto Mono",monospace;font-size:.82rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
+  .chip{font-family:"Lato";font-weight:700;font-size:.88rem;cursor:pointer;background:var(--paper);color:var(--navy);
+     border:1px solid #9db1c8;border-radius:18px;padding:.38rem .9rem;box-shadow:none;
+     transition:transform .07s,box-shadow .07s,background .15s;}
+  .chip:hover{background:#fff3cf;}
+  .chip:active{transform:translate(2px,3px);box-shadow:0 0 0 rgba(0,0,0,.15);}
+
+  .note{margin-top:1.5rem;padding:1rem 0 1.1rem;border-top:2px solid var(--navy);border-bottom:1px solid var(--line);
+     font-size:1rem;line-height:1.65;}
+  .note h2{margin:0 0 .45rem;font-size:1.05rem;letter-spacing:.08em;text-transform:uppercase;color:var(--navy);}
+  .note p{margin:0;}
+  .note b{color:var(--pos);} .note .v{color:var(--vel);font-weight:700;} .note .a{color:var(--acc);font-weight:700;}
+  .challenges{margin-top:1.25rem;padding:1rem 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
+  .challenges h2{margin:0 0 .35rem;font-size:1.2rem;}.challenges ul{margin:.25rem 0 0;padding-left:1.35rem;}
+  .submission{margin-top:1.5rem;padding:1.25rem 0;border-top:2px solid var(--navy);border-bottom:1px solid var(--line);}
+  .submission h2{margin:0 0 .35rem;color:var(--navy);font-size:1.3rem;}
+  .submission p{margin:.25rem 0 .8rem;color:#3e5269;}
+  .submission label{display:block;margin-bottom:.35rem;font-weight:800;color:var(--navy);}
+  .submission textarea{width:100%;min-height:95px;resize:vertical;font:inherit;line-height:1.5;color:var(--ink);background:white;
+     border:1px solid #9db1c8;border-radius:4px;padding:.7rem;outline:none;}
+  .submission textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,94,184,.15);}
+  .submission-actions{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:.8rem;}
+  .submission-actions .download{background:var(--gold);border-color:#d4a900;color:var(--navy);}
+  .submission-actions .download:hover{background:#e9b900;}
+  .final-status{min-height:1.3em;margin:.65rem 0 0!important;font-weight:700;color:var(--navy)!important;}
+  footer{margin-top:1.8rem;padding-top:1rem;border-top:1px solid var(--line);font-family:"Roboto Mono",monospace;font-size:.8rem;color:var(--muted);}
+
+  @media (max-width:760px){.graphs{grid-template-columns:1fr;}.readouts{grid-template-columns:repeat(2,1fr);} button{flex:1;min-width:0;}.student-row{align-items:flex-start;flex-direction:column;gap:.4rem;}.student-row input{width:100%;}}
+  @media (prefers-reduced-motion:reduce){#car{transition:none !important;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="course-banner">
+    <p class="instructor">Dr. Nuha Aljuneidi</p>
+    <p class="course-label">Dynamics in Motion · Mechanical Engineering</p>
+    <h1>Motion Graph <span class="hl">Translator</span></h1>
+    <p class="activity-id">ACTIVITY 02</p>
+  </header>
+  <div class="student-row">
+    <div class="student-field">
+      <label for="studentName">Student name</label>
+      <input id="studentName" name="studentName" type="text" autocomplete="name" placeholder="Write your full name" required>
+    </div>
+    <div class="student-field">
+      <label for="studentEmail">Email <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+      <input id="studentEmail" name="studentEmail" type="email" autocomplete="email" placeholder="name@example.com">
+    </div>
+    <button id="startActivity" type="button">Start Activity</button>
+    <p class="privacy-note">Your name, optional email, activity, and start time will be recorded in the instructor's Google Sheet.</p>
+    <p id="submitStatus" class="submit-status" role="status" aria-live="polite"></p>
+  </div>
+  <p class="lede">Drag the dots on the <b style="color:var(--vel)">velocity</b> graph. Position and acceleration redraw instantly — and the motion cart follows exactly what the graphs predict. Velocity is the slope of position; acceleration is the slope of velocity.</p>
+
+  <!-- Physical motion scene -->
+  <div class="stage-frame">
+    <svg viewBox="0 0 900 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A motion cart traveling along a calibrated linear track; its position matches the position graph.">
+      <defs><pattern id="techGrid" width="30" height="30" patternUnits="userSpaceOnUse"><path d="M30 0H0V30" fill="none" stroke="#1d4f7d" stroke-width="1"/></pattern></defs>
+      <rect width="900" height="180" fill="#002855"/><rect width="900" height="180" fill="url(#techGrid)"/>
+      <text x="42" y="32" fill="#7fc9ff" font-family="Roboto Mono,monospace" font-size="13" letter-spacing="1.5">LINEAR MOTION TRACK</text>
+      <text x="858" y="32" fill="#7fc9ff" font-family="Roboto Mono,monospace" font-size="12" text-anchor="end">s(t)</text>
+      <line x1="40" y1="142" x2="860" y2="142" stroke="#8bb8dc" stroke-width="3"/>
+      <line x1="40" y1="153" x2="860" y2="153" stroke="#315f88" stroke-width="1"/>
+      <g id="roadticks"></g>
+      <!-- start & end flags -->
+      <g id="startFlag"></g>
+      <!-- car -->
+      <g id="car" style="transition:transform .05s linear;">
+        <ellipse cx="0" cy="148" rx="32" ry="5" fill="rgba(0,0,0,.28)"/>
+        <rect x="-30" y="116" width="60" height="22" rx="4" fill="#00a6d6" stroke="#d8f2ff" stroke-width="2"/>
+        <path d="M-17 116 L-8 105 H12 L22 116 Z" fill="#005eb8" stroke="#d8f2ff" stroke-width="2"/>
+        <circle cx="-17" cy="141" r="7" fill="#081b31" stroke="#8bb8dc" stroke-width="2"/>
+        <circle cx="17" cy="141" r="7" fill="#081b31" stroke="#8bb8dc" stroke-width="2"/>
+      </g>
+    </svg>
+  </div>
+
+  <!-- Three graphs -->
+  <div class="graphs">
+    <div class="card pos">
+      <h2><span class="dot"></span> Position</h2>
+      <p class="tag">s vs t  ·  metres</p>
+      <svg id="gPos" class="graph-svg" viewBox="0 0 260 190" xmlns="http://www.w3.org/2000/svg" aria-label="Position versus time graph (read only, computed)."></svg>
+    </div>
+    <div class="card vel editable">
+      <span class="editable-badge">drag me!</span>
+      <h2><span class="dot"></span> Velocity</h2>
+      <p class="tag">v vs t  ·  m/s</p>
+      <svg id="gVel" class="graph-svg" viewBox="0 0 260 190" xmlns="http://www.w3.org/2000/svg" aria-label="Velocity versus time graph. Drag the control points to change the motion."></svg>
+    </div>
+    <div class="card acc">
+      <h2><span class="dot"></span> Acceleration</h2>
+      <p class="tag">a vs t  ·  m/s²</p>
+      <svg id="gAcc" class="graph-svg" viewBox="0 0 260 190" xmlns="http://www.w3.org/2000/svg" aria-label="Acceleration versus time graph (read only, computed)."></svg>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="play" id="play">▶ Play motion</button>
+    <button class="ghost" id="reset">⟲ Reset graph</button>
+  </div>
+
+  <div class="readouts" aria-live="polite">
+    <div class="readout"><span>time</span><strong id="rTime">0.00 s</strong></div>
+    <div class="readout"><span>position</span><strong id="rPos">0.00 m</strong></div>
+    <div class="readout"><span>velocity</span><strong id="rVel">0.00 m/s</strong></div>
+    <div class="readout"><span>acceleration</span><strong id="rAcc">0.00 m/s²</strong></div>
+    <div class="readout"><span>displacement</span><strong id="rDisp">0.00 m</strong></div>
+    <div class="readout"><span>distance</span><strong id="rDist">0.00 m</strong></div>
+  </div>
+
+  <div class="presets">
+    <span class="lbl">try a scenario:</span>
+    <button class="chip" data-p="rest">at rest</button>
+    <button class="chip" data-p="cruise">steady cruise</button>
+    <button class="chip" data-p="accel">speeding up</button>
+    <button class="chip" data-p="brake">slowing down</button>
+    <button class="chip" data-p="reverse">there &amp; back</button>
+  </div>
+
+  <section class="note" aria-labelledby="interpret-heading">
+    <h2 id="interpret-heading">Interpreting the Graphs</h2>
+    <p><b>Position</b> is where the car is. Its slope at any moment is the <span class="v">velocity</span>.
+    The <span class="v">velocity</span> graph's slope is the <span class="a">acceleration</span>.
+    Viewed in reverse, <span class="a">acceleration</span> describes how quickly velocity changes, while the signed area under <span class="v">velocity</span> gives displacement. Total distance is the area under speed, |v|. Drag a point to observe how the three graphs remain synchronized.</p>
+  </section>
+
+  <div class="challenges">
+    <h2>Try these motion challenges</h2>
+    <ul>
+      <li>Return the car to its starting position.</li>
+      <li>Finish with zero velocity.</li>
+      <li>Travel at least 20 m without reversing direction.</li>
+      <li>Create constant negative acceleration.</li>
+    </ul>
+  </div>
+
+  <section class="submission" aria-labelledby="submission-heading">
+    <h2 id="submission-heading">Engineering Record</h2>
+    <p>Explain what your motion graphs show, then submit your results or download a solution image for your records.</p>
+    <label for="studentNotes">Interpretation</label>
+    <textarea id="studentNotes" placeholder="Describe the relationship between position, velocity, and acceleration in your final graph."></textarea>
+    <div class="submission-actions">
+      <button id="submitWork" type="button">Submit My Work</button>
+      <button id="downloadSolution" class="download" type="button">Download Solution Image</button>
+    </div>
+    <p id="finalStatus" class="final-status" role="status" aria-live="polite"></p>
+  </section>
+
+  <footer>Dynamics in Motion · Developed by Dr. Nuha Aljuneidi</footer>
+</div>
+
+<script>
+(function(){
+  // ---- model: velocity defined by N control points over time 0..T ----
+  var N=6, T=6;                 // 6 points, 6 seconds
+  var s0=0;                     // start position (m)
+  var v=[0,0,0,0,0,0];          // editable velocity values (m/s) at t=0,1.2,...
+  var VMAX=8, VMIN=-8;          // velocity axis range
+  function tAt(i){ return i*T/(N-1); }
+
+  // ---- graph geometry (shared) ----
+  var GX0=38, GX1=248, GY0=16, GY1=158, W=GX1-GX0, H=GY1-GY0;
+  var NS="http://www.w3.org/2000/svg";
+  function el(tag,attrs){var e=document.createElementNS(NS,tag);for(var k in attrs)e.setAttribute(k,attrs[k]);return e;}
+  function xOf(t){ return GX0 + t/T*W; }
+  function yOf(val,lo,hi){ return GY1 - (val-lo)/(hi-lo)*H; }
+
+  // ---- derive position (integral) and acceleration (derivative) ----
+  function sampleV(t){ // linear interp of velocity
+    var f=t/T*(N-1), i=Math.floor(f), frac=f-i;
+    if(i>=N-1) return v[N-1];
+    return v[i]+(v[i+1]-v[i])*frac;
+  }
+  function buildSeries(){
+    var steps=120, pos=[], acc=[], sPrev=s0, tt, dt=T/steps;
+    var sArr=[{t:0,val:s0}];
+    for(var k=1;k<=steps;k++){
+      tt=k*dt;
+      // trapezoidal integrate velocity for position
+      var vA=sampleV(tt-dt), vB=sampleV(tt);
+      sPrev += (vA+vB)/2*dt;
+      sArr.push({t:tt,val:sPrev});
+    }
+    // acceleration = slope of velocity per segment
+    var aArr=[];
+    for(var i=0;i<N-1;i++){
+      var a=(v[i+1]-v[i])/(tAt(i+1)-tAt(i));
+      aArr.push({t0:tAt(i),t1:tAt(i+1),val:a});
+    }
+    return {s:sArr,a:aArr};
+  }
+
+  // ---- axes drawing ----
+  function drawAxes(svg,lo,hi,unitColor,zeroLine){
+    // frame
+    svg.appendChild(el("line",{x1:GX0,y1:GY1,x2:GX1,y2:GY1,stroke:"#2a2320","stroke-width":2.5}));
+    svg.appendChild(el("line",{x1:GX0,y1:GY0,x2:GX0,y2:GY1,stroke:"#2a2320","stroke-width":2.5}));
+    // zero line if range crosses 0
+    if(lo<0&&hi>0){
+      var yz=yOf(0,lo,hi);
+      svg.appendChild(el("line",{x1:GX0,y1:yz,x2:GX1,y2:yz,stroke:"#c9c3b4","stroke-width":1.5,"stroke-dasharray":"4 4"}));
+    }
+    // t label
+    var tl=el("text",{x:(GX0+GX1)/2,y:180,"text-anchor":"middle","font-family":"Gochi Hand,cursive","font-size":15,fill:"#7a736c"});
+    tl.textContent="time (s) →"; svg.appendChild(tl);
+    // simple y ticks at lo, 0, hi
+    [lo,0,hi].forEach(function(val){
+      if(val< lo || val>hi) return;
+      var y=yOf(val,lo,hi);
+      svg.appendChild(el("line",{x1:GX0-4,y1:y,x2:GX0,y2:y,stroke:"#2a2320","stroke-width":2}));
+      var t=el("text",{x:GX0-7,y:y+4,"text-anchor":"end","font-family":"Baloo 2","font-size":11,fill:"#7a736c"});
+      t.textContent=val; svg.appendChild(t);
+    });
+  }
+  function polyline(svg,pts,lo,hi,color){
+    var d="";
+    pts.forEach(function(p,i){ d+=(i?"L":"M")+xOf(p.t)+","+yOf(p.val,lo,hi)+" "; });
+    svg.appendChild(el("path",{d:d.trim(),fill:"none",stroke:color,"stroke-width":4,"stroke-linecap":"round","stroke-linejoin":"round"}));
+  }
+
+  // ---- render everything ----
+  var gPos=document.getElementById("gPos"),gVel=document.getElementById("gVel"),gAcc=document.getElementById("gAcc");
+  var posRange={lo:0,hi:10};
+  function clear(svg){while(svg.firstChild)svg.removeChild(svg.firstChild);}
+
+  function render(){
+    var ser=buildSeries();
+    // dynamic position range
+    var vals=ser.s.map(function(p){return p.val;});
+    var mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals);
+    var pad=Math.max(2,(mx-mn)*0.15);
+    var plo=Math.floor(Math.min(mn-pad,0)), phi=Math.ceil(Math.max(mx+pad,2));
+    posRange={lo:plo,hi:phi};
+
+    // POSITION
+    clear(gPos); drawAxes(gPos,plo,phi,"#5b5bd6");
+    polyline(gPos,ser.s,plo,phi,"#5b5bd6");
+
+    // VELOCITY (editable)
+    clear(gVel); drawAxes(gVel,VMIN,VMAX,"#ff7a3c");
+    var vpts=[];for(var i=0;i<N;i++)vpts.push({t:tAt(i),val:v[i]});
+    polyline(gVel,vpts,VMIN,VMAX,"#ff7a3c");
+    // handles
+    for(var i=0;i<N;i++){
+      var cx=xOf(tAt(i)),cy=yOf(v[i],VMIN,VMAX);
+      var h=el("circle",{cx:cx,cy:cy,r:8,fill:"#fffef8",stroke:"#ff7a3c","stroke-width":4,"data-i":i,class:"handle",style:"cursor:grab"});
+      gVel.appendChild(h);
+    }
+
+    // ACCELERATION (step plot)
+    clear(gAcc);
+    var maxA=ser.a.reduce(function(m,seg){return Math.max(m,Math.abs(seg.val));},0);
+    var aRange=Math.max(8,Math.ceil(maxA/2)*2);
+    drawAxes(gAcc,-aRange,aRange,"#12b886");
+    ser.a.forEach(function(seg){
+      var y=yOf(seg.val,-aRange,aRange);
+      gAcc.appendChild(el("line",{x1:xOf(seg.t0),y1:y,x2:xOf(seg.t1),y2:y,stroke:"#12b886","stroke-width":4,"stroke-linecap":"round"}));
+    });
+
+    [gPos,gVel,gAcc].forEach(function(svg){
+      svg.appendChild(el("line",{x1:xOf(currentTime),y1:GY0,x2:xOf(currentTime),y2:GY1,
+        stroke:"#2a2320","stroke-width":2,"stroke-dasharray":"5 4",class:"time-marker"}));
+    });
+
+    lastSeries=ser;
+    placeCarStatic();
+    updateDashboard(currentTime);
+  }
+
+  // ---- dragging on velocity graph ----
+  var dragging=null;
+  function svgPoint(svg,evt){
+    var pt=svg.createSVGPoint();
+    var t=(evt.touches?evt.touches[0]:evt);
+    pt.x=t.clientX;pt.y=t.clientY;
+    var m=svg.getScreenCTM().inverse();
+    return pt.matrixTransform(m);
+  }
+  function startDrag(e){
+    var tgt=e.target;
+    if(!tgt.classList||!tgt.classList.contains("handle"))return;
+    dragging=parseInt(tgt.getAttribute("data-i"),10);
+    e.preventDefault();
+  }
+  function moveDrag(e){
+    if(dragging===null)return;
+    var p=svgPoint(gVel,e);
+    var val=VMIN+(GY1-p.y)/H*(VMAX-VMIN);
+    val=Math.max(VMIN,Math.min(VMAX,val));
+    v[dragging]=Math.round(val*2)/2; // snap to 0.5
+    currentScenario="custom graph";
+    render();
+    e.preventDefault();
+  }
+  function endDrag(){dragging=null;}
+  gVel.addEventListener("mousedown",startDrag);
+  gVel.addEventListener("touchstart",startDrag,{passive:false});
+  window.addEventListener("mousemove",moveDrag);
+  window.addEventListener("touchmove",moveDrag,{passive:false});
+  window.addEventListener("mouseup",endDrag);
+  window.addEventListener("touchend",endDrag);
+
+  // ---- car placement & playback ----
+  var car=document.getElementById("car"), CAR0=70, CAR1=830; // road pixel range
+  var lastSeries=null;
+  function carXforPos(s){
+    var lo=posRange.lo,hi=posRange.hi;
+    if(hi===lo)hi=lo+1;
+    return CAR0+(s-lo)/(hi-lo)*(CAR1-CAR0);
+  }
+  function placeCarStatic(){
+    if(!lastSeries)return;
+    if(playing)return;
+    car.style.transform="translateX("+carXforPos(posAtTime(currentTime))+"px)";
+  }
+
+  var playing=false,rafId=null,currentTime=0;
+  function play(){
+    if(!lastSeries)return;
+    if(playing){pause();return;}
+    if(currentTime>=T){currentTime=0;updateDashboard(0);}
+    playing=true;document.getElementById("play").textContent="⏸ Pause";
+    var start=performance.now()-currentTime*1000;
+    function frame(now){
+      var t=(now-start)/1000;
+      if(t>=T){ t=T; }
+      currentTime=t;
+      var s=posAtTime(t);
+      car.style.transform="translateX("+carXforPos(s)+"px)";
+      updateDashboard(t);
+      if(t<T&&playing){ rafId=requestAnimationFrame(frame); }
+      else if(t>=T){
+        playing=false;rafId=null;document.getElementById("play").textContent="↺ Play again";
+      }
+    }
+    rafId=requestAnimationFrame(frame);
+  }
+  function pause(){
+    playing=false;
+    if(rafId)cancelAnimationFrame(rafId);
+    rafId=null;
+    document.getElementById("play").textContent="▶ Resume";
+  }
+  function posAtTime(t){
+    var arr=lastSeries.s, steps=arr.length-1, idx=Math.min(steps,Math.floor(t/T*steps));
+    return arr[idx].val;
+  }
+  function stop(){
+    playing=false;document.getElementById("play").textContent="▶ Play motion";
+    if(rafId)cancelAnimationFrame(rafId);
+    rafId=null;currentTime=0;
+    placeCarStatic();
+    updateDashboard(0);
+  }
+
+  function motionState(t){
+    var steps=240,dt=t/steps,s=s0,distance=0;
+    if(t<=0) return {s:s0,v:sampleV(0),a:(v[1]-v[0])/(tAt(1)-tAt(0)),disp:0,dist:0};
+    for(var i=1;i<=steps;i++){
+      var ta=(i-1)*dt,tb=i*dt,va=sampleV(ta),vb=sampleV(tb);
+      s+=(va+vb)*0.5*dt;
+      distance+=(Math.abs(va)+Math.abs(vb))*0.5*dt;
+    }
+    var seg=Math.min(N-2,Math.floor(t/T*(N-1)));
+    return {s:s,v:sampleV(t),a:(v[seg+1]-v[seg])/(tAt(seg+1)-tAt(seg)),disp:s-s0,dist:distance};
+  }
+  function updateDashboard(t){
+    var q=motionState(t);
+    document.getElementById("rTime").textContent=t.toFixed(2)+" s";
+    document.getElementById("rPos").textContent=q.s.toFixed(2)+" m";
+    document.getElementById("rVel").textContent=q.v.toFixed(2)+" m/s";
+    document.getElementById("rAcc").textContent=q.a.toFixed(2)+" m/s²";
+    document.getElementById("rDisp").textContent=q.disp.toFixed(2)+" m";
+    document.getElementById("rDist").textContent=q.dist.toFixed(2)+" m";
+    document.querySelectorAll(".time-marker").forEach(function(line){
+      line.setAttribute("x1",xOf(t));line.setAttribute("x2",xOf(t));
+    });
+  }
+  document.getElementById("play").addEventListener("click",play);
+
+  // ---- presets & reset ----
+  var currentScenario="custom graph";
+  var PRESETS={
+    rest:[0,0,0,0,0,0],
+    cruise:[4,4,4,4,4,4],
+    accel:[0,1.5,3,4.5,6,7.5],
+    brake:[7,5.5,4,2.5,1,0],
+    reverse:[5,3,0,-3,-5,0]
+  };
+  document.querySelectorAll(".chip").forEach(function(c){
+    c.addEventListener("click",function(){
+      stop();
+      var key=c.getAttribute("data-p");
+      currentScenario=c.textContent.trim();
+      v=PRESETS[key].slice(); render();
+    });
+  });
+  document.getElementById("reset").addEventListener("click",function(){
+    stop(); currentScenario="custom graph"; v=[0,0,0,0,0,0]; render();
+  });
+
+  // ---- Google Sheet activity registration ----
+  var LOGGER_URL="https://script.google.com/macros/s/AKfycbwmh8vX2n26GHHKq9yIGjy3fanmZ_XQddXHSH3RmrtV3HdhrpO27E3zZvXswCfN9QRpXg/exec";
+  document.getElementById("startActivity").addEventListener("click",async function(){
+    var button=this;
+    var name=document.getElementById("studentName").value.trim();
+    var email=document.getElementById("studentEmail").value.trim();
+    var status=document.getElementById("submitStatus");
+    if(!name){
+      status.textContent="Please enter your name before starting.";
+      document.getElementById("studentName").focus();
+      return;
+    }
+    if(email && !document.getElementById("studentEmail").checkValidity()){
+      status.textContent="Please check the email address or leave it blank.";
+      return;
+    }
+    button.disabled=true;
+    button.textContent="Recording…";
+    status.textContent="Connecting to the activity log…";
+    try{
+      var body=new URLSearchParams({
+        action:"start",
+        studentName:name,
+        email:email,
+        activity:"Motion Graph Translator — Activity 02",
+        scenario:currentScenario,
+        displacement:document.getElementById("rDisp").textContent.replace(" m",""),
+        distance:document.getElementById("rDist").textContent.replace(" m","")
+      });
+      await fetch(LOGGER_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:body});
+      status.textContent="Activity started. Your information was recorded.";
+      button.textContent="Activity Started";
+    }catch(error){
+      status.textContent="The activity could not be recorded. Check your connection and try again.";
+      button.disabled=false;
+      button.textContent="Start Activity";
+    }
+  });
+
+  function activityPayload(action){
+    return new URLSearchParams({
+      action:action,
+      studentName:document.getElementById("studentName").value.trim(),
+      email:document.getElementById("studentEmail").value.trim(),
+      activity:"Motion Graph Translator — Activity 02",
+      scenario:currentScenario,
+      displacement:document.getElementById("rDisp").textContent.replace(" m",""),
+      distance:document.getElementById("rDist").textContent.replace(" m",""),
+      notes:document.getElementById("studentNotes").value.trim()
+    });
+  }
+
+  document.getElementById("submitWork").addEventListener("click",async function(){
+    var name=document.getElementById("studentName").value.trim();
+    var status=document.getElementById("finalStatus");
+    if(!name){
+      status.textContent="Enter your name at the top before submitting.";
+      document.getElementById("studentName").focus();
+      return;
+    }
+    var button=this;
+    button.disabled=true;
+    button.textContent="Submitting…";
+    status.textContent="Sending your final results…";
+    try{
+      await fetch(LOGGER_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:activityPayload("complete")});
+      status.textContent="Work submitted. Your completion time and final results were recorded.";
+      button.textContent="Work Submitted";
+    }catch(error){
+      status.textContent="Submission failed. Check your connection and try again.";
+      button.disabled=false;
+      button.textContent="Submit My Work";
+    }
+  });
+
+  function drawSvgOnCanvas(ctx,svg,x,y,w,h){
+    return new Promise(function(resolve,reject){
+      var source=new XMLSerializer().serializeToString(svg);
+      var blob=new Blob([source],{type:"image/svg+xml;charset=utf-8"});
+      var url=URL.createObjectURL(blob);
+      var img=new Image();
+      img.onload=function(){ctx.drawImage(img,x,y,w,h);URL.revokeObjectURL(url);resolve();};
+      img.onerror=function(){URL.revokeObjectURL(url);reject(new Error("Graph image could not be created."));};
+      img.src=url;
+    });
+  }
+
+  function wrapCanvasText(ctx,text,x,y,maxWidth,lineHeight,maxLines){
+    var words=(text||"No interpretation provided.").split(/\s+/),line="",lines=0;
+    for(var i=0;i<words.length;i++){
+      var test=line?line+" "+words[i]:words[i];
+      if(ctx.measureText(test).width>maxWidth && line){
+        ctx.fillText(line,x,y+lines*lineHeight); lines++; line=words[i];
+        if(lines>=maxLines)break;
+      }else line=test;
+    }
+    if(lines<maxLines && line)ctx.fillText(line,x,y+lines*lineHeight);
+  }
+
+  document.getElementById("downloadSolution").addEventListener("click",async function(){
+    var name=document.getElementById("studentName").value.trim();
+    var status=document.getElementById("finalStatus");
+    if(!name){
+      status.textContent="Enter your name at the top before downloading your solution.";
+      document.getElementById("studentName").focus();
+      return;
+    }
+    var button=this;
+    button.disabled=true;
+    button.textContent="Creating Image…";
+    try{
+      var canvas=document.createElement("canvas"); canvas.width=1600; canvas.height=1080;
+      var ctx=canvas.getContext("2d");
+      ctx.fillStyle="#ffffff";ctx.fillRect(0,0,1600,1080);
+      ctx.fillStyle="#ffcc00";ctx.fillRect(0,0,1600,14);
+      ctx.fillStyle="#002855";ctx.fillRect(0,14,1600,180);
+      ctx.fillStyle="#ffffff";ctx.font="700 34px Lato,Arial";ctx.fillText("Dr. Nuha Aljuneidi",60,72);
+      ctx.fillStyle="#ffcc00";ctx.font="700 20px Lato,Arial";ctx.fillText("DYNAMICS IN MOTION · MOTION GRAPH TRANSLATOR",60,112);
+      ctx.fillStyle="#ffffff";ctx.font="700 44px Lato,Arial";ctx.fillText("Student Solution Record",60,165);
+      ctx.fillStyle="#10243e";ctx.font="700 24px Lato,Arial";ctx.fillText("Student: "+name,60,240);
+      ctx.font="20px Lato,Arial";ctx.fillText("Date: "+new Date().toLocaleString(),60,275);
+      ctx.fillText("Scenario: "+currentScenario,800,240);
+      ctx.fillText("Activity 02",800,275);
+      ctx.strokeStyle="#d9e3ef";ctx.lineWidth=2;ctx.strokeRect(45,305,1510,440);
+      await Promise.all([
+        drawSvgOnCanvas(ctx,document.getElementById("gPos"),65,335,460,380),
+        drawSvgOnCanvas(ctx,document.getElementById("gVel"),570,335,460,380),
+        drawSvgOnCanvas(ctx,document.getElementById("gAcc"),1075,335,460,380)
+      ]);
+      ctx.fillStyle="#002855";ctx.font="700 26px Lato,Arial";ctx.fillText("Final Results",60,800);
+      ctx.fillStyle="#10243e";ctx.font="22px Lato,Arial";
+      ctx.fillText("Position: "+document.getElementById("rPos").textContent,60,842);
+      ctx.fillText("Velocity: "+document.getElementById("rVel").textContent,350,842);
+      ctx.fillText("Acceleration: "+document.getElementById("rAcc").textContent,650,842);
+      ctx.fillText("Displacement: "+document.getElementById("rDisp").textContent,1010,842);
+      ctx.fillText("Distance: "+document.getElementById("rDist").textContent,1320,842);
+      ctx.fillStyle="#002855";ctx.font="700 26px Lato,Arial";ctx.fillText("Student Interpretation",60,905);
+      ctx.fillStyle="#334b64";ctx.font="20px Lato,Arial";
+      wrapCanvasText(ctx,document.getElementById("studentNotes").value.trim(),60,942,1460,30,3);
+      ctx.fillStyle="#002855";ctx.fillRect(0,1040,1600,40);
+      ctx.fillStyle="#ffffff";ctx.font="16px Lato,Arial";ctx.fillText("Dynamics in Motion · Developed by Dr. Nuha Aljuneidi",60,1067);
+      var link=document.createElement("a");
+      link.download="motion-graph-solution-"+name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")+".png";
+      link.href=canvas.toDataURL("image/png"); link.click();
+      status.textContent="Solution image downloaded.";
+    }catch(error){
+      status.textContent="The solution image could not be created. Please try again.";
+    }finally{
+      button.disabled=false;
+      button.textContent="Download Solution Image";
+    }
+  });
+
+  // ---- road ticks + start flag ----
+  (function(){
+    var rt=document.getElementById("roadticks");
+    for(var x=CAR0;x<=CAR1;x+=95){
+      rt.appendChild(el("rect",{x:x-14,y:143,width:28,height:4,rx:2,fill:"#f4d03f"}));
+    }
+    var sf=document.getElementById("startFlag");
+    sf.appendChild(el("line",{x1:CAR0,y1:118,x2:CAR0,y2:150,stroke:"#2a2320","stroke-width":3}));
+    sf.appendChild(el("path",{d:"M"+CAR0+",118 l18,6 l-18,6 z",fill:"#12b886",stroke:"#2a2320","stroke-width":2}));
+    var lab=el("text",{x:CAR0,y:172,"text-anchor":"middle","font-family":"Gochi Hand,cursive","font-size":14,fill:"#2a2320"});
+    lab.textContent="start"; sf.appendChild(lab);
+  })();
+
+  // init
+  currentScenario="speeding up";
+  v=PRESETS.accel.slice();
+  render();
+})();
+</script>
+</body>
+</html>
