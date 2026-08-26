@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Motion Vector Lab | Dr. Nuha Aljuneidi</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;600&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     THEME — matches "Dynamics in Motion" activity set
+     Navy / gold engineering-lab palette, Source Sans 3 + Source Code Pro
+     Color-blind-friendly vector palette (purple/teal/orange/blue)
+     ============================================================ */
+  :root{
+    --ink:#10243e;
+    --navy:#002855; --blue:#005eb8; --cyan:#00a6d6;
+    --pos:#7c3aed;   /* position r  — purple */
+    --vel:#0f9d8f;   /* velocity v  — teal   */
+    --acc:#e8722c;   /* accel   a   — orange */
+    --disp:#2563c9;  /* displacement Δr — blue */
+    --gold:#ffcc00; --paper:#ffffff; --line:#d9e3ef; --muted:#5f7084;
+    --good:#0b8457; --bad:#c0392b;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;max-width:100%;overflow-x:hidden;}
+  body{
+    font-family:"Source Sans 3",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);
+    background-color:#f4f7fb;min-height:100vh;padding:clamp(1rem,3.5vw,2.5rem);
+    display:flex;flex-direction:column;align-items:center;
+  }
+  .wrap{width:100%;max-width:1120px;}
+
+  .activity-nav{display:flex;gap:.55rem;flex-wrap:wrap;margin:0 0 .8rem;}
+  .activity-nav a{font-weight:700;font-size:.9rem;text-decoration:none;color:var(--navy);background:var(--paper);
+     border:1px solid #9db1c8;border-radius:2px;padding:.45rem .8rem;}
+  .activity-nav a[aria-current="page"]{background:var(--navy);border-color:var(--navy);color:#fff;}
+
+  .course-banner{background:var(--navy);color:#fff;border-top:6px solid var(--gold);
+     padding:clamp(1.25rem,2.5vw,1.75rem);margin-bottom:1.45rem;}
+  .course-banner .instructor{margin:0 0 .3rem;font-size:clamp(1.25rem,2.5vw,1.65rem);font-weight:700;color:#fff;}
+  .course-banner .course-label{margin:0 0 .9rem;font-family:"Source Code Pro",monospace;font-size:.75rem;font-weight:600;
+     letter-spacing:.13em;text-transform:uppercase;color:var(--gold);}
+  .course-banner h1{margin:0;color:#fff;font-weight:700;line-height:1.08;font-size:clamp(1.85rem,4.2vw,2.9rem);letter-spacing:-.02em;}
+  .course-banner .activity-id{margin:.55rem 0 0;font-family:"Source Code Pro",monospace;font-size:.76rem;letter-spacing:.08em;color:var(--gold);}
+  .lede{font-size:1.05rem;max-width:74ch;margin:0 0 1.4rem;line-height:1.6;color:#3e5269;}
+
+  .layout{display:grid;grid-template-columns:1.5fr 1fr;gap:1.2rem;align-items:start;}
+  @media (max-width:900px){.layout{grid-template-columns:1fr;}}
+
+  .stage-frame{border:1px solid #173e68;border-radius:2px;overflow:hidden;
+     box-shadow:0 4px 12px rgba(0,40,85,.08);background:var(--navy);}
+  .stage-frame svg{width:100%;height:auto;display:block;}
+
+  .panel{background:var(--paper);border:1px solid var(--line);border-radius:2px;padding:1rem;}
+  .panel h2{margin:0 0 .6rem;font-size:1rem;letter-spacing:.06em;text-transform:uppercase;color:var(--navy);}
+  .panel h2 .sub{text-transform:none;letter-spacing:0;font-weight:400;color:var(--muted);font-size:.82rem;}
+
+  fieldset{border:1px solid var(--line);border-radius:2px;margin:0 0 1rem;padding:.7rem .8rem .8rem;}
+  legend{font-family:"Source Code Pro",monospace;font-size:.72rem;font-weight:600;letter-spacing:.08em;
+     text-transform:uppercase;color:var(--muted);padding:0 .4rem;}
+  .toggles{display:grid;grid-template-columns:1fr 1fr;gap:.35rem .8rem;}
+  .toggles label{display:flex;align-items:center;gap:.45rem;font-size:.92rem;cursor:pointer;}
+  .toggles input{width:16px;height:16px;accent-color:var(--blue);}
+  .swatch{width:16px;height:4px;border-radius:2px;display:inline-block;flex:none;}
+
+  .scale-row{display:flex;align-items:center;gap:.6rem;margin-top:.2rem;}
+  .scale-row input[type=range]{flex:1;accent-color:var(--blue);}
+  .scale-val{font-family:"Source Code Pro",monospace;font-size:.85rem;color:var(--navy);min-width:3.2em;text-align:right;}
+
+  .presets{display:flex;gap:.5rem;flex-wrap:wrap;margin:0 0 1rem;}
+  .chip{font-weight:600;font-size:.88rem;cursor:pointer;background:var(--paper);color:var(--navy);
+     border:1px solid #9db1c8;border-radius:2px;padding:.4rem .8rem;transition:background .15s;}
+  .chip:hover{background:#eef4fb;}
+  .chip[aria-pressed="true"]{background:var(--navy);color:#fff;border-color:var(--navy);}
+
+  .controls{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin:0 0 .8rem;}
+  button{font-family:inherit;font-weight:700;font-size:.94rem;cursor:pointer;color:#fff;background:var(--blue);
+     border:1px solid #004f9e;border-radius:2px;padding:.55rem .95rem;transition:background .15s;}
+  button:hover{background:#004f9e;}
+  button:active{background:#003f7d;}
+  button:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+  button.play{background:var(--navy);border-color:var(--navy);}
+  button.play:hover{background:#001d3d;}
+  button.ghost{background:var(--paper);color:var(--navy);border-color:#9db1c8;}
+  button.ghost:hover{background:#eef4fb;}
+  button[disabled]{opacity:.45;cursor:not-allowed;}
+
+  .timeline{display:flex;align-items:center;gap:.7rem;margin:.2rem 0 .8rem;}
+  .timeline input[type=range]{flex:1;accent-color:var(--navy);}
+  .timeline .t-read{font-family:"Source Code Pro",monospace;font-size:.85rem;color:var(--navy);min-width:5.4em;}
+  .speed-row{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.4rem;}
+  .speed-row .lbl,.loop-row .lbl{font-family:"Source Code Pro",monospace;font-size:.72rem;text-transform:uppercase;
+     letter-spacing:.05em;color:var(--muted);}
+  .speed-row .speed{display:inline-flex;gap:.3rem;}
+  .speed button{padding:.32rem .6rem;font-size:.85rem;background:var(--paper);color:var(--navy);border-color:#9db1c8;}
+  .speed button[aria-pressed="true"]{background:var(--gold);color:var(--navy);border-color:#d4a900;}
+  .loop-row{display:flex;align-items:center;gap:.5rem;margin-bottom:.2rem;}
+
+  .dash{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;}
+  .dash .cell{border:1px solid var(--line);border-radius:2px;padding:.5rem .6rem;background:#fbfdff;}
+  .dash .cell.full{grid-column:1/-1;}
+  .dash .k{font-family:"Source Code Pro",monospace;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);}
+  .dash .val{font-family:"Source Code Pro",monospace;font-size:1rem;color:var(--ink);margin-top:.15rem;}
+  .val .vx{color:var(--vel);} .val .vy{color:var(--acc);}
+
+  .eqn{font-family:"Source Code Pro",monospace;font-size:.92rem;line-height:1.85;color:var(--ink);}
+  .eqn .lhs{color:var(--muted);}
+  .eqn .cx{color:var(--vel);font-weight:600;} .eqn .cy{color:var(--acc);font-weight:600;}
+  .eqn .rc{color:var(--pos);font-weight:600;} .eqn .ac{color:var(--acc);font-weight:600;} .eqn .vc{color:var(--vel);font-weight:600;}
+
+  .concept{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:.75rem 0;margin:.2rem 0 0;color:#3e5269;line-height:1.55;font-size:.96rem;}
+  .reminders{margin:.8rem 0 0;padding:.7rem .8rem;background:#f1f6fc;border:1px solid var(--line);border-radius:2px;font-size:.88rem;color:#3e5269;}
+  .reminders ul{margin:.3rem 0 0;padding-left:1.2rem;} .reminders li{margin:.15rem 0;}
+
+  .graphs{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:1.3rem 0 0;}
+  @media (max-width:760px){.graphs{grid-template-columns:1fr;}}
+  .gcard{background:var(--paper);border:1px solid var(--line);border-radius:2px;padding:.7rem .7rem .4rem;}
+  .gcard h3{margin:0 0 .3rem;font-size:.95rem;color:var(--navy);display:flex;justify-content:space-between;align-items:baseline;gap:.5rem;}
+  .gcard .leg{font-family:"Source Code Pro",monospace;font-size:.72rem;font-weight:400;}
+  .gcard .leg .a{color:var(--vel);} .gcard .leg .b{color:var(--acc);}
+  .gcard svg{width:100%;height:auto;display:block;touch-action:none;}
+
+  /* challenge */
+  .challenge{margin-top:1.3rem;padding:1rem;border:1px solid var(--line);border-radius:2px;background:var(--paper);}
+  .challenge .head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.6rem;}
+  .challenge h2{margin:0;font-size:1.15rem;color:var(--navy);}
+  .challenge .score{font-family:"Source Code Pro",monospace;font-weight:600;color:var(--navy);}
+  .challenge .body{margin-top:.7rem;display:none;}
+  .challenge.on .body{display:block;}
+  .compass{display:grid;grid-template-columns:repeat(3,64px);grid-template-rows:repeat(3,64px);gap:.4rem;justify-content:center;margin:.7rem auto;}
+  .compass button{background:var(--paper);color:var(--navy);border:1px solid #9db1c8;font-size:1.2rem;padding:0;height:64px;}
+  .compass button[aria-pressed="true"]{background:var(--navy);color:#fff;border-color:var(--navy);}
+  .compass .center{font-size:.8rem;font-weight:700;}
+  .challenge .prompt{font-size:1rem;color:#3e5269;text-align:center;min-height:1.4em;}
+  .challenge .fb{margin:.6rem 0 0;min-height:1.4em;font-weight:700;text-align:center;}
+  .challenge .fb.good{color:var(--good);} .challenge .fb.bad{color:var(--bad);}
+  .challenge .cta{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin-top:.6rem;}
+
+  details.validation{display:none;margin-top:1.5rem;border:1px solid var(--line);border-radius:2px;background:var(--paper);}
+  details.validation>summary{cursor:pointer;padding:.8rem 1rem;font-weight:700;color:var(--navy);
+     font-family:"Source Code Pro",monospace;letter-spacing:.04em;list-style:none;}
+  details.validation>summary::-webkit-details-marker{display:none;}
+  details.validation>summary::before{content:"▸ ";}
+  details.validation[open]>summary::before{content:"▾ ";}
+  .vreport{padding:0 1rem 1rem;}
+  .vsum{font-family:"Source Code Pro",monospace;font-size:.9rem;margin:.4rem 0 .8rem;}
+  .vsum .pass{color:var(--good);} .vsum .fail{color:var(--bad);}
+  table.vtable{width:100%;border-collapse:collapse;font-size:.82rem;font-family:"Source Code Pro",monospace;}
+  table.vtable th,table.vtable td{text-align:left;padding:.32rem .5rem;border-bottom:1px solid var(--line);vertical-align:top;}
+  table.vtable td.r{color:var(--good);font-weight:600;} table.vtable td.r.no{color:var(--bad);}
+
+  footer{margin-top:1.8rem;padding-top:1rem;border-top:1px solid var(--line);
+     font-family:"Source Code Pro",monospace;font-size:.78rem;color:var(--muted);}
+
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;}
+
+  @media (prefers-reduced-motion:reduce){#pip,#trailGroup{transition:none !important;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="activity-nav" aria-label="Dynamics activities">
+    <a href="index.html">Activity 01: Distance &amp; Displacement</a>
+    <a href="motion-graph-translator.html">Activity 02: Motion Graph Translator</a>
+    <a href="motion-vector-lab.html" aria-current="page">Activity 03: Motion Vector Lab</a>
+  </nav>
+
+  <header class="course-banner">
+    <p class="instructor">Dr. Nuha Aljuneidi</p>
+    <p class="course-label">Dynamics in Motion · Mechanical Engineering</p>
+    <h1>Motion Vector Lab</h1>
+    <p class="activity-id">ACTIVITY 03</p>
+  </header>
+
+  <p class="lede">Position <strong>r(t)</strong>, velocity <strong>v(t) = dr/dt</strong>, and acceleration <strong>a(t) = dv/dt</strong> describe the same motion. Select a preset and observe how the trajectory, vectors, and x/y components remain connected at every instant. Velocity is tangent to the path; acceleration changes speed, direction, or both.</p>
+
+  <!-- ====================== MAIN LAYOUT ====================== -->
+  <div class="layout">
+    <!-- LEFT: stage -->
+    <div>
+      <div class="stage-frame">
+        <svg id="stage" viewBox="0 0 600 460" xmlns="http://www.w3.org/2000/svg"
+             role="img" aria-label="Coordinate plane showing a particle moving along a trajectory with position, velocity, and acceleration vectors.">
+          <defs>
+            <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+              <path d="M30 0H0V30" fill="none" stroke="#123c66" stroke-width="1"/>
+            </pattern>
+            <marker id="mkPos" markerWidth="9" markerHeight="9" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#7c3aed"/></marker>
+            <marker id="mkVel" markerWidth="9" markerHeight="9" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#0f9d8f"/></marker>
+            <marker id="mkAcc" markerWidth="9" markerHeight="9" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#e8722c"/></marker>
+            <marker id="mkDisp" markerWidth="9" markerHeight="9" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#2563c9"/></marker>
+            <marker id="mkComp" markerWidth="8" markerHeight="8" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#9fb4cc"/></marker>
+          </defs>
+          <rect width="600" height="460" fill="#002855"/>
+          <rect width="600" height="460" fill="url(#grid)"/>
+          <g id="axes"></g>
+          <path id="trajectory" fill="none" stroke="#7fb0e0" stroke-width="1.5" stroke-dasharray="5 5" opacity="0.55"/>
+          <g id="trailGroup"></g>
+          <line id="dispVec" stroke="#2563c9" stroke-width="3" marker-end="url(#mkDisp)" style="display:none"/>
+          <!-- component vectors (drawn under main vectors) -->
+          <g id="compGroup" style="display:none"></g>
+          <line id="posVec" stroke="#7c3aed" stroke-width="3" marker-end="url(#mkPos)"/>
+          <line id="velVec" stroke="#0f9d8f" stroke-width="3.5" marker-end="url(#mkVel)"/>
+          <line id="accVec" stroke="#e8722c" stroke-width="3.5" marker-end="url(#mkAcc)"/>
+          <g id="originDot"></g>
+          <g id="pip"></g>
+          <g id="vecLabels"></g>
+        </svg>
+      </div>
+
+      <!-- graphs under stage -->
+      <div class="graphs">
+        <div class="gcard">
+          <h3>Position <span class="leg"><span class="a">x(t)</span> · <span class="b">y(t)</span></span></h3>
+          <svg id="gPosG" viewBox="0 0 260 150" xmlns="http://www.w3.org/2000/svg" aria-label="Graph of position components x and y versus time."></svg>
+        </div>
+        <div class="gcard">
+          <h3>Velocity <span class="leg"><span class="a">vx(t)</span> · <span class="b">vy(t)</span></span></h3>
+          <svg id="gVelG" viewBox="0 0 260 150" xmlns="http://www.w3.org/2000/svg" aria-label="Graph of velocity components vx and vy versus time."></svg>
+        </div>
+        <div class="gcard">
+          <h3>Acceleration <span class="leg"><span class="a">ax(t)</span> · <span class="b">ay(t)</span></span></h3>
+          <svg id="gAccG" viewBox="0 0 260 150" xmlns="http://www.w3.org/2000/svg" aria-label="Graph of acceleration components ax and ay versus time."></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: controls + data -->
+    <div>
+      <div class="panel" style="margin-bottom:1.2rem;">
+        <h2>Motion preset</h2>
+        <div class="presets" id="presetRow" role="group" aria-label="Motion presets">
+          <button class="chip" data-k="constant" aria-pressed="true">Constant velocity</button>
+          <button class="chip" data-k="straight">Straight-line accel</button>
+          <button class="chip" data-k="circular">Uniform circular</button>
+          <button class="chip" data-k="parabolic">Parabolic</button>
+          <button class="chip" data-k="curved">Changing-speed curve</button>
+        </div>
+
+        <div class="controls">
+          <button class="play" id="play" aria-label="Play or pause">▶ Play</button>
+          <button class="ghost" id="reset">⟲ Reset</button>
+          <button class="ghost" id="stepB" aria-label="Step backward">⏮ Step</button>
+          <button class="ghost" id="stepF" aria-label="Step forward">Step ⏭</button>
+        </div>
+
+        <div class="timeline">
+          <label for="tl" class="sr-only">Timeline</label>
+          <input type="range" id="tl" min="0" max="1000" value="0" step="1">
+          <span class="t-read" id="tlRead">t = 0.00 s</span>
+        </div>
+
+        <div class="speed-row">
+          <span class="lbl">Speed</span>
+          <span class="speed" id="speedRow" role="group" aria-label="Playback speed">
+            <button data-s="0.25" aria-pressed="false">0.25×</button>
+            <button data-s="0.5" aria-pressed="false">0.5×</button>
+            <button data-s="1" aria-pressed="true">1×</button>
+            <button data-s="2" aria-pressed="false">2×</button>
+          </span>
+        </div>
+        <div class="loop-row">
+          <input type="checkbox" id="loop" style="width:16px;height:16px;accent-color:var(--blue);">
+          <label for="loop" class="lbl" style="cursor:pointer;">Loop playback</label>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:1.2rem;">
+        <h2>Show / hide <span class="sub">vectors &amp; overlays</span></h2>
+        <fieldset>
+          <legend>Vectors</legend>
+          <div class="toggles">
+            <label><input type="checkbox" id="tPos" checked><span class="swatch" style="background:var(--pos)"></span> Position r</label>
+            <label><input type="checkbox" id="tVel" checked><span class="swatch" style="background:var(--vel)"></span> Velocity v</label>
+            <label><input type="checkbox" id="tAcc" checked><span class="swatch" style="background:var(--acc)"></span> Acceleration a</label>
+            <label><input type="checkbox" id="tDisp"><span class="swatch" style="background:var(--disp)"></span> Displacement Δr</label>
+            <label><input type="checkbox" id="tComp"><span class="swatch" style="background:#9fb4cc"></span> Components</label>
+          </div>
+        </fieldset>
+        <fieldset style="margin-bottom:.6rem;">
+          <legend>Overlays</legend>
+          <div class="toggles">
+            <label><input type="checkbox" id="tTrail" checked> Fading trail</label>
+            <label><input type="checkbox" id="tTraj" checked> Full trajectory</label>
+          </div>
+        </fieldset>
+        <fieldset style="margin-bottom:0;">
+          <legend>Vector display scale</legend>
+          <div class="scale-row">
+            <input type="range" id="vscale" min="0.2" max="3" step="0.1" value="1" aria-label="Vector display scale">
+            <span class="scale-val" id="vscaleVal">1.0×</span>
+          </div>
+          <p style="margin:.4rem 0 0;font-size:.78rem;color:var(--muted);">Visual length only: at 1.0×, each vector unit is drawn as 0.5 grid unit. Dashboard values stay physically exact.</p>
+        </fieldset>
+      </div>
+
+      <div class="panel" style="margin-bottom:1.2rem;">
+        <h2>Live values <span class="sub">exact at time t</span></h2>
+        <div class="dash">
+          <div class="cell"><div class="k">time t</div><div class="val" id="dTime">0.00 s</div></div>
+          <div class="cell"><div class="k">speed |v|</div><div class="val" id="dSpeed">0.00 m/s</div></div>
+          <div class="cell full"><div class="k">position r = ⟨x, y⟩</div><div class="val" id="dPos">⟨0.00, 0.00⟩ m</div></div>
+          <div class="cell full"><div class="k">velocity v = ⟨vx, vy⟩</div><div class="val" id="dVel">⟨0.00, 0.00⟩ m/s</div></div>
+          <div class="cell full"><div class="k">acceleration a = ⟨ax, ay⟩</div><div class="val" id="dAcc">⟨0.00, 0.00⟩ m/s²</div></div>
+          <div class="cell"><div class="k">|a|</div><div class="val" id="dAmag">0.00 m/s²</div></div>
+          <div class="cell"><div class="k">displacement |Δr|</div><div class="val" id="dDisp">0.00 m</div></div>
+          <div class="cell full"><div class="k">distance traveled</div><div class="val" id="dDist">0.00 m</div></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Equations <span class="sub">selected preset</span></h2>
+        <div class="eqn" id="eqnBox"></div>
+        <p class="concept" id="concept"></p>
+        <div class="reminders">
+          <strong>Remember</strong>
+          <ul>
+            <li>Velocity is <em>tangent</em> to the trajectory.</li>
+            <li>Acceleration need <em>not</em> point along the motion.</li>
+            <li>Zero acceleration ⇒ the whole velocity vector is constant.</li>
+            <li>Constant <em>speed</em> does not mean zero acceleration.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================== CHALLENGE ====================== -->
+  <div class="challenge" id="challenge">
+    <div class="head">
+      <h2>Prediction Challenge</h2>
+      <div style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;">
+        <span class="score" id="score">0 of 0 correct</span>
+        <label style="display:flex;align-items:center;gap:.4rem;font-size:.9rem;cursor:pointer;">
+          <input type="checkbox" id="challengeOn" style="width:16px;height:16px;accent-color:var(--blue);"> Enable
+        </label>
+      </div>
+    </div>
+    <div class="body">
+      <p class="prompt" id="chPrompt">Enable the challenge to begin.</p>
+      <div class="compass" id="compass" role="group" aria-label="Choose a direction">
+        <button data-dir="NW" aria-label="Up and left">↖</button>
+        <button data-dir="N" aria-label="Up">↑</button>
+        <button data-dir="NE" aria-label="Up and right">↗</button>
+        <button data-dir="W" aria-label="Left">←</button>
+        <button data-dir="Z" class="center" aria-label="Zero vector">ZERO</button>
+        <button data-dir="E" aria-label="Right">→</button>
+        <button data-dir="SW" aria-label="Down and left">↙</button>
+        <button data-dir="S" aria-label="Down">↓</button>
+        <button data-dir="SE" aria-label="Down and right">↘</button>
+      </div>
+      <div class="cta">
+        <button id="chCheck">Check answer</button>
+        <button class="ghost" id="chNext">Next challenge</button>
+        <button class="ghost" id="chResetScore">Reset score</button>
+      </div>
+      <p class="fb" id="chFb" role="status" aria-live="polite"></p>
+    </div>
+  </div>
+
+  <!-- ====================== VALIDATION ====================== -->
+  <details class="validation" id="validation">
+    <summary>Validation &amp; Test Results</summary>
+    <div class="vreport">
+      <p style="font-size:.88rem;color:var(--muted);margin:.2rem 0 .6rem;">
+        Runs automatically when the page URL ends with <code>?test=1</code>, or press the button below.
+        Checks analytical r/v/a against independently coded expected values, central-difference derivatives,
+        and physical invariants for every preset.
+      </p>
+      <button class="ghost" id="runTests">Run validation tests</button>
+      <div class="vsum" id="vsum">No tests run yet.</div>
+      <div id="vtableWrap"></div>
+    </div>
+  </details>
+
+  <footer>Dynamics in Motion · Developed by Dr. Nuha Aljuneidi</footer>
+</div>
+
+<script>
+"use strict";
+/* ================================================================
+   MOTION VECTOR LAB
+   Architecture:
+     - PRESETS: each stores exact analytical r(t), v(t), a(t) and a
+       time span. Nothing is estimated from animation frames.
+     - MODEL layer computes values at a continuous time t.
+     - VIEW layer maps math coords (y up) to SVG pixels (y down) and
+       renders. Vector *display* length is scaled for visibility only;
+       all dashboard numbers use exact values.
+     - Distance traveled uses adaptive numeric integration of |v(t)|,
+       cached per preset, independent of frame rate.
+   ================================================================ */
+
+/* ---------- small vector helpers ---------- */
+function mag(x,y){ return Math.hypot(x,y); }
+
+/* ================================================================
+   PRESETS  — r,v,a are exact analytical functions of t
+   ================================================================ */
+var PRESETS = {
+  constant: {
+    name:"Constant velocity",
+    t0:0, t1:6,
+    r:function(t){ return [ -4 + 1.2*t, 1 ]; },
+    v:function(t){ return [ 1.2, 0 ]; },
+    a:function(t){ return [ 0, 0 ]; },
+    // distance is analytic: |v| = 1.2 constant
+    dist:function(t){ return 1.2*(t-0); },
+    concept:"Velocity is constant, so acceleration is zero. The point moves in a straight line covering equal distances in equal times.",
+    eqn:["r(t) = ⟨ -4 + 1.2t , 1 ⟩",
+         "v(t) = ⟨ 1.2 , 0 ⟩",
+         "a(t) = ⟨ 0 , 0 ⟩"]
+  },
+  straight: {
+    name:"Straight-line acceleration",
+    t0:0, t1:5,
+    r:function(t){ return [ -4 + 0.4*t + 0.18*t*t, -1 ]; },
+    v:function(t){ return [ 0.4 + 0.36*t, 0 ]; },
+    a:function(t){ return [ 0.36, 0 ]; },
+    // |v| = 0.4+0.36t (>=0 on span) -> integral = 0.4t + 0.18t^2
+    dist:function(t){ return 0.4*t + 0.18*t*t; },
+    concept:"Velocity and acceleration point the same way (both +x), so the point speeds up while moving in a straight line.",
+    eqn:["r(t) = ⟨ -4 + 0.4t + 0.18t² , -1 ⟩",
+         "v(t) = ⟨ 0.4 + 0.36t , 0 ⟩",
+         "a(t) = ⟨ 0.36 , 0 ⟩"]
+  },
+  circular: {
+    name:"Uniform circular motion",
+    t0:0, t1:2*Math.PI,
+    r:function(t){ return [ 3*Math.cos(t), 3*Math.sin(t) ]; },
+    v:function(t){ return [ -3*Math.sin(t), 3*Math.cos(t) ]; },
+    a:function(t){ return [ -3*Math.cos(t), -3*Math.sin(t) ]; },
+    // |v| = 3 constant -> distance = 3 t
+    dist:function(t){ return 3*t; },
+    concept:"Speed is constant (|v| = 3) but the velocity direction changes continuously, so acceleration is non-zero and points toward the center (centripetal).",
+    eqn:["r(t) = ⟨ 3 cos t , 3 sin t ⟩",
+         "v(t) = ⟨ -3 sin t , 3 cos t ⟩",
+         "a(t) = ⟨ -3 cos t , -3 sin t ⟩ = −r(t)"]
+  },
+  parabolic: {
+    name:"Parabolic motion",
+    t0:0, t1:6,
+    r:function(t){ return [ -4 + 1.2*t, -2 + 2.4*t - 0.35*t*t ]; },
+    v:function(t){ return [ 1.2, 2.4 - 0.7*t ]; },
+    a:function(t){ return [ 0, -0.7 ]; },
+    dist:null, // needs numeric integration (speed not trivially integrable)
+    concept:"Horizontal velocity is constant while vertical velocity changes at a steady rate — the classic projectile parabola. Acceleration is constant and purely vertical.",
+    eqn:["r(t) = ⟨ -4 + 1.2t , -2 + 2.4t − 0.35t² ⟩",
+         "v(t) = ⟨ 1.2 , 2.4 − 0.7t ⟩",
+         "a(t) = ⟨ 0 , -0.7 ⟩"]
+  },
+  curved: {
+    name:"Changing-speed curved motion",
+    t0:0, t1:8,
+    // r = <0.12 t^2 - 4, 2 sin(0.8 t)>
+    r:function(t){ return [ 0.12*t*t - 4, 2*Math.sin(0.8*t) ]; },
+    v:function(t){ return [ 0.24*t, 1.6*Math.cos(0.8*t) ]; },      // d/dt
+    a:function(t){ return [ 0.24, -1.28*Math.sin(0.8*t) ]; },      // d2/dt2
+    dist:null,
+    concept:"Both speed and direction change over time, so acceleration has components that turn the path and change how fast the particle moves along it.",
+    eqn:["r(t) = ⟨ 0.12t² − 4 , 2 sin(0.8t) ⟩",
+         "v(t) = ⟨ 0.24t , 1.6 cos(0.8t) ⟩",
+         "a(t) = ⟨ 0.24 , −1.28 sin(0.8t) ⟩"]
+  }
+};
+
+/* ================================================================
+   Distance-traveled: cumulative arc length of |v(t)| by fine
+   composite Simpson integration, cached per preset. Frame-rate
+   independent; the animation samples this table by interpolation.
+   ================================================================ */
+function buildDistanceTable(P){
+  var t0=P.t0, t1=P.t1, M=2000;         // fine, fixed resolution
+  var dt=(t1-t0)/M;
+  var ts=new Array(M+1), cum=new Array(M+1);
+  var speed=function(t){ var vv=P.v(t); return mag(vv[0],vv[1]); };
+  ts[0]=t0; cum[0]=0;
+  var acc=0;
+  for(var i=1;i<=M;i++){
+    var ta=t0+(i-1)*dt, tb=t0+i*dt, tm=(ta+tb)/2;
+    // Simpson on [ta,tb]
+    acc += (tb-ta)/6*( speed(ta) + 4*speed(tm) + speed(tb) );
+    ts[i]=tb; cum[i]=acc;
+  }
+  return {ts:ts,cum:cum,dt:dt,t0:t0,t1:t1,M:M};
+}
+function distanceAt(P,t){
+  if(P.dist) return P.dist(t);            // analytic when available
+  var T=P._distTable;
+  if(!T) return 0;
+  if(t<=T.t0) return 0;
+  if(t>=T.t1) return T.cum[T.M];
+  var f=(t-T.t0)/T.dt, i=Math.floor(f), frac=f-i;
+  return T.cum[i] + (T.cum[i+1]-T.cum[i])*frac;
+}
+
+/* ================================================================
+   STATE
+   ================================================================ */
+var state = {
+  key:"constant",
+  P:PRESETS.constant,
+  t:0,
+  playing:false,
+  speed:1,
+  loop:false,
+  vscale:1,
+  show:{pos:true,vel:true,acc:true,disp:false,comp:false,trail:true,traj:true},
+  trail:[],            // recent {x,y} in math coords
+  lastFrame:null
+};
+
+/* ================================================================
+   COORDINATE TRANSFORM  (math coords -> SVG pixels)
+   Math: x right, y UP. SVG: x right, y DOWN.
+   World window: x in [-6,6], y in [-4.6,4.6] approx, centered.
+   ================================================================ */
+var VIEW = { w:600, h:460, cx:300, cy:230, ppu:44 }; // pixels per unit
+function toPx(x,y){ return [ VIEW.cx + x*VIEW.ppu, VIEW.cy - y*VIEW.ppu ]; }
+
+var NS="http://www.w3.org/2000/svg";
+function el(tag,attrs){ var e=document.createElementNS(NS,tag); for(var k in attrs) e.setAttribute(k,attrs[k]); return e; }
+function clear(node){ while(node.firstChild) node.removeChild(node.firstChild); }
+
+/* ---------- build static axes once ---------- */
+(function buildAxes(){
+  var g=document.getElementById("axes");
+  // gridded axes with ticks every 1 unit, labels every 2
+  var xr=[-6,6], yr=[-4,4];
+  // main axes
+  var o=toPx(0,0);
+  g.appendChild(el("line",{x1:toPx(xr[0],0)[0],y1:o[1],x2:toPx(xr[1],0)[0],y2:o[1],stroke:"#5f93c6","stroke-width":1.6}));
+  g.appendChild(el("line",{x1:o[0],y1:toPx(0,yr[0])[1],x2:o[0],y2:toPx(0,yr[1])[1],stroke:"#5f93c6","stroke-width":1.6}));
+  var i,p,tx;
+  for(i=xr[0];i<=xr[1];i++){ if(i===0)continue;
+    p=toPx(i,0);
+    g.appendChild(el("line",{x1:p[0],y1:p[1]-4,x2:p[0],y2:p[1]+4,stroke:"#5f93c6","stroke-width":1.2}));
+    if(i%2===0){ tx=el("text",{x:p[0],y:p[1]+16,"text-anchor":"middle","font-family":"Source Code Pro,monospace","font-size":10,fill:"#9fc4e8"}); tx.textContent=i; g.appendChild(tx); }
+  }
+  for(i=yr[0];i<=yr[1];i++){ if(i===0)continue;
+    p=toPx(0,i);
+    g.appendChild(el("line",{x1:p[0]-4,y1:p[1],x2:p[0]+4,y2:p[1],stroke:"#5f93c6","stroke-width":1.2}));
+    if(i%2===0){ tx=el("text",{x:p[0]-9,y:p[1]+3.5,"text-anchor":"end","font-family":"Source Code Pro,monospace","font-size":10,fill:"#9fc4e8"}); tx.textContent=i; g.appendChild(tx); }
+  }
+  // axis letters + unit note
+  tx=el("text",{x:toPx(xr[1],0)[0]-4,y:o[1]-8,"text-anchor":"end","font-family":"Source Code Pro,monospace","font-size":12,fill:"#cfe3f6"}); tx.textContent="x (m)"; g.appendChild(tx);
+  tx=el("text",{x:o[0]+8,y:toPx(0,yr[1])[1]+12,"font-family":"Source Code Pro,monospace","font-size":12,fill:"#cfe3f6"}); tx.textContent="y (m)"; g.appendChild(tx);
+})();
+
+/* ---------- origin + pip ---------- */
+(function(){
+  var o=toPx(0,0), od=document.getElementById("originDot");
+  od.appendChild(el("circle",{cx:o[0],cy:o[1],r:3.5,fill:"#ffcc00",stroke:"#002855","stroke-width":1.5}));
+})();
+function drawPip(px,py){
+  var g=document.getElementById("pip"); clear(g);
+  g.appendChild(el("circle",{cx:px,cy:py,r:11,fill:"#ffffff",stroke:"#10243e","stroke-width":2}));
+  g.appendChild(el("circle",{cx:px-3.5,cy:py-2,r:2,fill:"#10243e"}));
+  g.appendChild(el("circle",{cx:px+3.5,cy:py-2,r:2,fill:"#10243e"}));
+  g.appendChild(el("path",{d:"M"+(px-4)+","+(py+3)+" Q"+px+","+(py+7)+" "+(px+4)+","+(py+3),fill:"none",stroke:"#10243e","stroke-width":1.6,"stroke-linecap":"round"}));
+}
+
+/* ================================================================
+   RENDER one instant
+   ================================================================ */
+var elS={};
+["posVec","velVec","accVec","dispVec","compGroup","trajectory","trailGroup","vecLabels"].forEach(function(id){elS[id]=document.getElementById(id);});
+
+function setLine(node,x1,y1,x2,y2){ node.setAttribute("x1",x1);node.setAttribute("y1",y1);node.setAttribute("x2",x2);node.setAttribute("y2",y2); }
+function vis(node,on){ node.style.display = on ? "" : "none"; }
+
+function renderTrajectory(){
+  var P=state.P, N=240, d="";
+  for(var i=0;i<=N;i++){
+    var t=P.t0+(P.t1-P.t0)*i/N, r=P.r(t), p=toPx(r[0],r[1]);
+    d += (i? "L":"M")+p[0].toFixed(2)+","+p[1].toFixed(2)+" ";
+  }
+  elS.trajectory.setAttribute("d",d.trim());
+  vis(elS.trajectory,state.show.traj);
+}
+
+function renderInstant(){
+  var P=state.P, t=state.t;
+  var r=P.r(t), v=P.v(t), a=P.a(t);
+  // Derive concealment on every render so controls cannot reveal a challenge answer.
+  var predicting = typeof challenge!=="undefined" && challenge.on && !challenge.answered;
+  var hideVel = predicting && challenge.hidden==="v";
+  var hideAcc = predicting && challenge.hidden==="a";
+  var pPix=toPx(r[0],r[1]);
+  drawPip(pPix[0],pPix[1]);
+
+  // position vector: origin -> pip (true length, not scaled — it's a position)
+  var o=toPx(0,0);
+  setLine(elS.posVec,o[0],o[1],pPix[0],pPix[1]); vis(elS.posVec,state.show.pos);
+
+  // velocity & acceleration: start at pip, scaled for visibility
+  var sc=state.vscale;
+  var vEnd=toPx(r[0]+v[0]*0.5*sc, r[1]+v[1]*0.5*sc);   // 0.5 base gain
+  var aEnd=toPx(r[0]+a[0]*0.5*sc, r[1]+a[1]*0.5*sc);
+  setLine(elS.velVec,pPix[0],pPix[1],vEnd[0],vEnd[1]); vis(elS.velVec,state.show.vel && !hideVel && mag(v[0],v[1])>1e-9);
+  setLine(elS.accVec,pPix[0],pPix[1],aEnd[0],aEnd[1]); vis(elS.accVec,state.show.acc && !hideAcc && mag(a[0],a[1])>1e-9);
+
+  // displacement from initial position
+  var r0=P.r(P.t0), r0p=toPx(r0[0],r0[1]);
+  setLine(elS.dispVec,r0p[0],r0p[1],pPix[0],pPix[1]); vis(elS.dispVec,state.show.disp);
+
+  // component vectors of velocity (dominant teaching aid): vx along x, vy along y from pip
+  clear(elS.compGroup);
+  if(state.show.comp && !hideVel){
+    var vxEnd=toPx(r[0]+v[0]*0.5*sc, r[1]);
+    var vyEnd=toPx(r[0], r[1]+v[1]*0.5*sc);
+    if(mag(v[0],0)>1e-9) elS.compGroup.appendChild(el("line",{x1:pPix[0],y1:pPix[1],x2:vxEnd[0],y2:vxEnd[1],stroke:"#9fb4cc","stroke-width":2,"stroke-dasharray":"4 3","marker-end":"url(#mkComp)"}));
+    if(mag(0,v[1])>1e-9) elS.compGroup.appendChild(el("line",{x1:pPix[0],y1:pPix[1],x2:vyEnd[0],y2:vyEnd[1],stroke:"#9fb4cc","stroke-width":2,"stroke-dasharray":"4 3","marker-end":"url(#mkComp)"}));
+    vis(elS.compGroup,true);
+  } else vis(elS.compGroup,false);
+
+  // vector labels
+  clear(elS.vecLabels);
+  function label(px,py,txt,color){
+    var t=el("text",{x:px,y:py,"font-family":"Source Code Pro,monospace","font-size":12,"font-weight":600,fill:color,stroke:"#002855","stroke-width":3,"paint-order":"stroke"});
+    t.textContent=txt; elS.vecLabels.appendChild(t);
+  }
+  if(state.show.pos) label((o[0]+pPix[0])/2+4,(o[1]+pPix[1])/2,"r","#c4a8ff");
+  if(state.show.vel && !hideVel && mag(v[0],v[1])>1e-9) label(vEnd[0]+4,vEnd[1],"v","#7fe9dd");
+  if(state.show.acc && !hideAcc && mag(a[0],a[1])>1e-9) label(aEnd[0]+4,aEnd[1],"a","#ffb27f");
+
+  // trail
+  renderTrail();
+
+  // dashboards + graph cursor
+  updateDashboard(t,r,v,a);
+  updateGraphCursor(t);
+}
+
+/* ---------- fading trail ---------- */
+function renderTrail(){
+  var g=elS.trailGroup; clear(g);
+  if(!state.show.trail){ return; }
+  var tr=state.trail, n=tr.length;
+  for(var i=0;i<n;i++){
+    var p=toPx(tr[i].x,tr[i].y);
+    var op=(i+1)/n*0.5;
+    g.appendChild(el("circle",{cx:p[0],cy:p[1],r:2.4,fill:"#8fd0ff",opacity:op.toFixed(3)}));
+  }
+}
+function pushTrail(){
+  var r=state.P.r(state.t);
+  var tr=state.trail, last=tr[tr.length-1];
+  if(!last || Math.hypot(last.x-r[0],last.y-r[1])>0.03){
+    tr.push({x:r[0],y:r[1]});
+    if(tr.length>90) tr.shift();
+  }
+}
+
+/* ================================================================
+   DASHBOARD
+   ================================================================ */
+function fmt(n,d){ if(!isFinite(n)) n=0; return (Math.abs(n)<5e-7?0:n).toFixed(d===undefined?2:d); }
+function vecStr(x,y,unit){ return "⟨ "+fmt(x)+", "+fmt(y)+" ⟩"+(unit?(" "+unit):""); }
+function updateDashboard(t,r,v,a){
+  var disp=[ r[0]-state.P.r(state.P.t0)[0], r[1]-state.P.r(state.P.t0)[1] ];
+  var predicting = typeof challenge!=="undefined" && challenge.on && !challenge.answered;
+  var hideVel = predicting && challenge.hidden==="v";
+  var hideAcc = predicting && challenge.hidden==="a";
+  document.getElementById("dTime").textContent = fmt(t)+" s";
+  document.getElementById("dSpeed").textContent= hideVel ? "Hidden for challenge" : fmt(mag(v[0],v[1]))+" m/s";
+  document.getElementById("dPos").textContent  = vecStr(r[0],r[1],"m");
+  document.getElementById("dVel").textContent  = hideVel ? "Hidden until Check Answer" : vecStr(v[0],v[1],"m/s");
+  document.getElementById("dAcc").textContent  = hideAcc ? "Hidden until Check Answer" : vecStr(a[0],a[1],"m/s²");
+  document.getElementById("dAmag").textContent = hideAcc ? "Hidden for challenge" : fmt(mag(a[0],a[1]))+" m/s²";
+  document.getElementById("dDisp").textContent = fmt(mag(disp[0],disp[1]))+" m";
+  document.getElementById("dDist").textContent = fmt(distanceAt(state.P,t))+" m";
+  // timeline read
+  document.getElementById("tlRead").textContent = "t = "+fmt(t)+" s";
+}
+
+/* ================================================================
+   SYNCHRONIZED COMPONENT GRAPHS
+   ================================================================ */
+var GG={ x0:34,x1:250,y0:12,y1:120 };
+function buildComponentGraph(svgId, comp){
+  // comp: function(t)->[cx,cy]; draws two auto-scaled curves + axis
+  var svg=document.getElementById(svgId); clear(svg);
+  var P=state.P, N=200, xs=[], A=[], B=[];
+  var lo=Infinity, hi=-Infinity, i, t, c;
+  for(i=0;i<=N;i++){
+    t=P.t0+(P.t1-P.t0)*i/N; c=comp(t);
+    xs.push(t); A.push(c[0]); B.push(c[1]);
+    lo=Math.min(lo,c[0],c[1]); hi=Math.max(hi,c[0],c[1]);
+  }
+  if(lo===hi){ lo-=1; hi+=1; }
+  var pad=(hi-lo)*0.12; lo-=pad; hi+=pad;
+  // include zero line if in range
+  var W=GG.x1-GG.x0, H=GG.y1-GG.y0;
+  function X(tt){ return GG.x0 + (tt-P.t0)/(P.t1-P.t0)*W; }
+  function Y(val){ return GG.y1 - (val-lo)/(hi-lo)*H; }
+  // frame
+  svg.appendChild(el("line",{x1:GG.x0,y1:GG.y1,x2:GG.x1,y2:GG.y1,stroke:"#c2cfdd","stroke-width":1.4}));
+  svg.appendChild(el("line",{x1:GG.x0,y1:GG.y0,x2:GG.x0,y2:GG.y1,stroke:"#c2cfdd","stroke-width":1.4}));
+  if(lo<0&&hi>0){ var yz=Y(0); svg.appendChild(el("line",{x1:GG.x0,y1:yz,x2:GG.x1,y2:yz,stroke:"#e0e7f0","stroke-width":1,"stroke-dasharray":"3 3"})); }
+  // y ticks (lo,0,hi)
+  [lo,0,hi].forEach(function(val){ if(val<lo-1e-9||val>hi+1e-9)return;
+    var yy=Y(val);
+    var tx=el("text",{x:GG.x0-4,y:yy+3,"text-anchor":"end","font-family":"Source Code Pro,monospace","font-size":8,fill:"#7a8ba0"});
+    tx.textContent=(Math.abs(val)<1e-9?0:val.toFixed(1)); svg.appendChild(tx);
+  });
+  // t-axis end labels
+  var lx=el("text",{x:GG.x1,y:GG.y1+11,"text-anchor":"end","font-family":"Source Code Pro,monospace","font-size":8,fill:"#7a8ba0"}); lx.textContent="t="+P.t1.toFixed(1); svg.appendChild(lx);
+  var l0=el("text",{x:GG.x0,y:GG.y1+11,"font-family":"Source Code Pro,monospace","font-size":8,fill:"#7a8ba0"}); l0.textContent="0"; svg.appendChild(l0);
+  // curves
+  function poly(arr,color){ var d="",j; for(j=0;j<=N;j++){ d+=(j?"L":"M")+X(xs[j]).toFixed(2)+","+Y(arr[j]).toFixed(2)+" "; } svg.appendChild(el("path",{d:d.trim(),fill:"none",stroke:color,"stroke-width":2})); }
+  poly(A,"#0f9d8f");  // x-like -> teal
+  poly(B,"#e8722c");  // y-like -> orange
+  // cursor line (updated separately)
+  var cur=el("line",{x1:X(state.t),y1:GG.y0,x2:X(state.t),y2:GG.y1,stroke:"#002855","stroke-width":1.4,"stroke-dasharray":"2 2"}); cur.setAttribute("data-cursor","1"); svg.appendChild(cur);
+  // store mapping for cursor updates
+  svg._map={X:X,Y:Y,lo:lo,hi:hi};
+}
+function buildAllGraphs(){
+  buildComponentGraph("gPosG", function(t){ return state.P.r(t); });
+  buildComponentGraph("gVelG", function(t){ return state.P.v(t); });
+  buildComponentGraph("gAccG", function(t){ return state.P.a(t); });
+}
+function updateGraphCursor(t){
+  ["gPosG","gVelG","gAccG"].forEach(function(id){
+    var svg=document.getElementById(id); if(!svg._map)return;
+    var cur=svg.querySelector('[data-cursor]'); if(!cur)return;
+    var x=svg._map.X(t); cur.setAttribute("x1",x); cur.setAttribute("x2",x);
+  });
+}
+
+/* ================================================================
+   EQUATION + CONCEPT PANEL
+   ================================================================ */
+function renderEqn(){
+  var P=state.P, box=document.getElementById("eqnBox");
+  box.innerHTML = P.eqn.map(function(line){
+    // color x-comp teal, y-comp orange lightly by tagging inside ⟨ ⟩
+    return "<div>"+line.replace("r(t)","<span class='rc'>r(t)</span>")
+                       .replace("v(t)","<span class='vc'>v(t)</span>")
+                       .replace("a(t)","<span class='ac'>a(t)</span>")+"</div>";
+  }).join("");
+  document.getElementById("concept").textContent = P.concept;
+}
+
+/* ================================================================
+   ANIMATION LOOP  (frame-rate independent via timestamps)
+   ================================================================ */
+function tick(ts){
+  if(!state.playing){ state.lastFrame=null; return; }
+  if(state.lastFrame==null) state.lastFrame=ts;
+  var dt=(ts-state.lastFrame)/1000; state.lastFrame=ts;
+  state.t += dt*state.speed;
+  var P=state.P;
+  if(state.t>=P.t1){
+    if(state.loop){ state.t=P.t0; state.trail.length=0; }
+    else { state.t=P.t1; setPlaying(false); }
+  }
+  pushTrail();
+  syncTimeline();
+  renderInstant();
+  if(state.playing) requestAnimationFrame(tick);
+}
+function setPlaying(on){
+  state.playing=on;
+  document.getElementById("play").textContent = on?"⏸ Pause":"▶ Play";
+  if(on){ state.lastFrame=null; requestAnimationFrame(tick); }
+}
+
+/* ---------- timeline sync ---------- */
+function syncTimeline(){
+  var P=state.P, frac=(state.t-P.t0)/(P.t1-P.t0);
+  document.getElementById("tl").value = Math.round(frac*1000);
+}
+function timelineToTime(val){
+  var P=state.P; return P.t0 + (val/1000)*(P.t1-P.t0);
+}
+
+/* ================================================================
+   PRESET SWITCH + RESET
+   ================================================================ */
+function loadPreset(key){
+  state.key=key; state.P=PRESETS[key];
+  if(!state.P.dist && !state.P._distTable){ state.P._distTable=buildDistanceTable(state.P); }
+  state.t=state.P.t0; state.trail.length=0;
+  // preset chip pressed state
+  document.querySelectorAll("#presetRow .chip").forEach(function(c){ c.setAttribute("aria-pressed", c.getAttribute("data-k")===key?"true":"false"); });
+  renderTrajectory(); buildAllGraphs(); renderEqn();
+  syncTimeline(); renderInstant();
+  // reset any active challenge to match new preset
+  if(challenge.on){ newChallenge(); }
+}
+function resetMotion(){
+  setPlaying(false);
+  state.t=state.P.t0; state.trail.length=0;
+  syncTimeline(); renderInstant();
+}
+function step(dir){
+  setPlaying(false);
+  var P=state.P, dstep=(P.t1-P.t0)/120;
+  state.t=Math.max(P.t0,Math.min(P.t1, state.t + dir*dstep));
+  if(dir<0) state.trail.length=0;
+  pushTrail(); syncTimeline(); renderInstant();
+}
+
+/* ================================================================
+   EVENT WIRING
+   ================================================================ */
+document.getElementById("presetRow").addEventListener("click",function(e){
+  var b=e.target.closest(".chip"); if(!b)return; loadPreset(b.getAttribute("data-k"));
+});
+document.getElementById("play").addEventListener("click",function(){ setPlaying(!state.playing); });
+document.getElementById("reset").addEventListener("click",resetMotion);
+document.getElementById("stepF").addEventListener("click",function(){ step(1); });
+document.getElementById("stepB").addEventListener("click",function(){ step(-1); });
+document.getElementById("tl").addEventListener("input",function(){
+  setPlaying(false); var nextT=timelineToTime(+this.value); if(nextT<state.t) state.trail.length=0; state.t=nextT; renderInstant();
+});
+document.getElementById("speedRow").addEventListener("click",function(e){
+  var b=e.target.closest("button"); if(!b)return;
+  state.speed=parseFloat(b.getAttribute("data-s"));
+  this.querySelectorAll("button").forEach(function(x){ x.setAttribute("aria-pressed", x===b?"true":"false"); });
+});
+document.getElementById("loop").addEventListener("change",function(){ state.loop=this.checked; });
+document.getElementById("vscale").addEventListener("input",function(){
+  state.vscale=parseFloat(this.value);
+  document.getElementById("vscaleVal").textContent=state.vscale.toFixed(1)+"×";
+  renderInstant();
+});
+// visibility toggles
+var toggleMap={tPos:"pos",tVel:"vel",tAcc:"acc",tDisp:"disp",tComp:"comp",tTrail:"trail",tTraj:"traj"};
+Object.keys(toggleMap).forEach(function(id){
+  document.getElementById(id).addEventListener("change",function(){
+    state.show[toggleMap[id]]=this.checked;
+    renderTrajectory(); renderInstant();
+  });
+});
+// keyboard
+document.addEventListener("keydown",function(e){
+  if(e.target.matches("input,textarea")) return;
+  if(e.code==="Space"){ e.preventDefault(); setPlaying(!state.playing); }
+  else if(e.code==="ArrowRight"){ e.preventDefault(); step(1); }
+  else if(e.code==="ArrowLeft"){ e.preventDefault(); step(-1); }
+  else if(e.key==="r"||e.key==="R"){ resetMotion(); }
+});
+
+/* ================================================================
+   PREDICTION CHALLENGE
+   ================================================================ */
+var challenge={ on:false, hidden:"v", checkpointT:0, picked:null, correct:0, total:0, answered:false };
+var DIRS={ E:[1,0],NE:[1,1],N:[0,1],NW:[-1,1],W:[-1,0],SW:[-1,-1],S:[0,-1],SE:[1,-1] };
+function normalize(v){ var m=mag(v[0],v[1]); return m<1e-9?[0,0]:[v[0]/m,v[1]/m]; }
+
+function newChallenge(){
+  challenge.answered=false; challenge.picked=null;
+  var P=state.P;
+  // pick a checkpoint away from the ends
+  var frac=0.2+Math.random()*0.6;
+  challenge.checkpointT=P.t0+(P.t1-P.t0)*frac;
+  challenge.hidden = Math.random()<0.5 ? "v" : "a";
+  // move sim to checkpoint, pause
+  setPlaying(false); state.t=challenge.checkpointT; pushTrail(); syncTimeline(); renderInstant();
+  // clear compass selection + feedback
+  document.querySelectorAll("#compass button").forEach(function(b){ b.setAttribute("aria-pressed","false"); });
+  var fb=document.getElementById("chFb"); fb.textContent=""; fb.className="fb";
+  var vecName = challenge.hidden==="v" ? "velocity v" : "acceleration a";
+  document.getElementById("chPrompt").textContent =
+    "At t = "+challenge.checkpointT.toFixed(2)+" s, which way does "+vecName+" point? (Pick a direction or ZERO, then Check.)";
+  // hide the queried vector visually while predicting
+  applyChallengeHide(true);
+}
+function applyChallengeHide(hide){
+  if(!challenge.on){ return; }
+  if(hide){
+    if(challenge.hidden==="v") vis(elS.velVec,false); else vis(elS.accVec,false);
+  }
+}
+function trueDirVec(){
+  var P=state.P, t=challenge.checkpointT;
+  return challenge.hidden==="v" ? P.v(t) : P.a(t);
+}
+function checkChallenge(){
+  if(!challenge.on || challenge.answered) return;
+  if(challenge.picked===null){ var fb0=document.getElementById("chFb"); fb0.textContent="Pick a direction first."; fb0.className="fb bad"; return; }
+  var tv=trueDirVec(), tmag=mag(tv[0],tv[1]);
+  var fb=document.getElementById("chFb");
+  var isZeroTrue = tmag<1e-6;
+  var ok=false, detail="";
+  if(challenge.picked==="Z"){
+    ok=isZeroTrue;
+    detail= ok ? "Correct — the vector is (essentially) zero here." :
+                 "Not zero — its magnitude is "+tmag.toFixed(2)+".";
+  } else if(isZeroTrue){
+    ok=false; detail="The true vector is zero here, so no compass direction is right.";
+  } else {
+    var pick=normalize(DIRS[challenge.picked]);
+    var tru=normalize([tv[0],tv[1]]);
+    var dot=pick[0]*tru[0]+pick[1]*tru[1];
+    dot=Math.max(-1,Math.min(1,dot));
+    var ang=Math.acos(dot)*180/Math.PI;
+    ok = ang<=22.5;
+    detail = ok ? ("Correct — within "+ang.toFixed(1)+"° of the true direction.")
+                : ("Off by "+ang.toFixed(1)+"°. True direction ≈ ⟨"+tru[0].toFixed(2)+", "+tru[1].toFixed(2)+"⟩.");
+  }
+  challenge.answered=true; challenge.total++; if(ok) challenge.correct++;
+  fb.textContent=(ok?"✓ ":"✗ ")+detail; fb.className="fb "+(ok?"good":"bad");
+  updateScore();
+  // reveal the vector now
+  applyChallengeHide(false); renderInstant();
+}
+function updateScore(){ document.getElementById("score").textContent=challenge.correct+" of "+challenge.total+" correct"; }
+
+document.getElementById("challengeOn").addEventListener("change",function(){
+  challenge.on=this.checked;
+  document.getElementById("challenge").classList.toggle("on",challenge.on);
+  if(challenge.on){ newChallenge(); }
+  else { document.getElementById("chPrompt").textContent="Enable the challenge to begin."; renderInstant(); }
+});
+document.getElementById("compass").addEventListener("click",function(e){
+  var b=e.target.closest("button"); if(!b||!challenge.on||challenge.answered)return;
+  challenge.picked=b.getAttribute("data-dir");
+  this.querySelectorAll("button").forEach(function(x){ x.setAttribute("aria-pressed", x===b?"true":"false"); });
+});
+document.getElementById("chCheck").addEventListener("click",checkChallenge);
+document.getElementById("chNext").addEventListener("click",function(){ if(challenge.on) newChallenge(); });
+document.getElementById("chResetScore").addEventListener("click",function(){
+  challenge.correct=0; challenge.total=0; updateScore();
+  var fb=document.getElementById("chFb"); fb.textContent=""; fb.className="fb";
+});
+
+/* ================================================================
+   VALIDATION TEST SUITE
+   ================================================================ */
+function expected(){
+  // Independently coded expected r,v,a (do NOT reuse PRESETS functions)
+  return {
+    constant:{
+      r:function(t){return[-4+1.2*t,1];}, v:function(t){return[1.2,0];}, a:function(t){return[0,0];}
+    },
+    straight:{
+      r:function(t){return[-4+0.4*t+0.18*t*t,-1];}, v:function(t){return[0.4+0.36*t,0];}, a:function(t){return[0.36,0];}
+    },
+    circular:{
+      r:function(t){return[3*Math.cos(t),3*Math.sin(t)];}, v:function(t){return[-3*Math.sin(t),3*Math.cos(t)];}, a:function(t){return[-3*Math.cos(t),-3*Math.sin(t)];}
+    },
+    parabolic:{
+      r:function(t){return[-4+1.2*t,-2+2.4*t-0.35*t*t];}, v:function(t){return[1.2,2.4-0.7*t];}, a:function(t){return[0,-0.7];}
+    },
+    curved:{
+      r:function(t){return[0.12*t*t-4,2*Math.sin(0.8*t)];}, v:function(t){return[0.24*t,1.6*Math.cos(0.8*t)];}, a:function(t){return[0.24,-1.28*Math.sin(0.8*t)];}
+    }
+  };
+}
+function runValidationTests(){
+  var results=[], TOLA=1e-8, TOLD=1e-4, EXP=expected();
+  function rec(name,pass,info){ results.push({name:name,pass:pass,info:info||""}); }
+  function close(a,b,tol){ return Math.abs(a-b)<=tol; }
+  function vclose(A,B,tol){ return close(A[0],B[0],tol)&&close(A[1],B[1],tol); }
+  function finite(A){ return isFinite(A[0])&&isFinite(A[1]); }
+
+  Object.keys(PRESETS).forEach(function(key){
+    var P=PRESETS[key], E=EXP[key];
+    var pts=[P.t0,(P.t0+P.t1)/2,P.t1];
+    pts.forEach(function(t,idx){
+      var lbl=key+" @t="+t.toFixed(2);
+      var r=P.r(t),v=P.v(t),a=P.a(t);
+      rec(lbl+" r matches", vclose(r,E.r(t),TOLA), "r=⟨"+r[0].toFixed(4)+","+r[1].toFixed(4)+"⟩");
+      rec(lbl+" v matches", vclose(v,E.v(t),TOLA));
+      rec(lbl+" a matches", vclose(a,E.a(t),TOLA));
+      rec(lbl+" finite", finite(r)&&finite(v)&&finite(a));
+      rec(lbl+" |v|=√(vx²+vy²)", close(mag(v[0],v[1]),Math.sqrt(v[0]*v[0]+v[1]*v[1]),1e-12));
+      rec(lbl+" |a|=√(ax²+ay²)", close(mag(a[0],a[1]),Math.sqrt(a[0]*a[0]+a[1]*a[1]),1e-12));
+    });
+    // central-difference derivative checks at interior points
+    var h=1e-5;
+    [0.3,0.55,0.8].forEach(function(f){
+      var t=P.t0+(P.t1-P.t0)*f;
+      var rp=P.r(t+h), rm=P.r(t-h);
+      var vnum=[(rp[0]-rm[0])/(2*h),(rp[1]-rm[1])/(2*h)];
+      rec(key+" v≈Δr/Δt @f="+f, vclose(vnum,P.v(t),TOLD), "num=⟨"+vnum[0].toFixed(5)+","+vnum[1].toFixed(5)+"⟩");
+      var vp=P.v(t+h), vm=P.v(t-h);
+      var anum=[(vp[0]-vm[0])/(2*h),(vp[1]-vm[1])/(2*h)];
+      rec(key+" a≈Δv/Δt @f="+f, vclose(anum,P.a(t),TOLD));
+    });
+  });
+
+  // ---- invariant tests ----
+  (function(){
+    var P=PRESETS.constant;
+    rec("INV constant |a|=0", mag(P.a(0)[0],P.a(0)[1])===0 && mag(P.a(3)[0],P.a(3)[1])===0);
+    rec("INV constant v steady", vclose(P.v(0),P.v(5),1e-12));
+  })();
+  (function(){
+    var P=PRESETS.straight;
+    rec("INV straight ax=0.36", close(P.a(1)[0],0.36,1e-12));
+    rec("INV straight ay=0", P.a(1)[1]===0);
+    rec("INV straight x(t) quadratic", close(P.r(2)[0], -4+0.4*2+0.18*4, 1e-12));
+  })();
+  (function(){
+    var P=PRESETS.circular, t=1.234;
+    rec("INV circular |r|=3", close(mag(P.r(t)[0],P.r(t)[1]),3,1e-12));
+    rec("INV circular |v|=3", close(mag(P.v(t)[0],P.v(t)[1]),3,1e-12));
+    var r=P.r(t),v=P.v(t); rec("INV circular r·v=0", close(r[0]*v[0]+r[1]*v[1],0,1e-12));
+    var a=P.a(t); rec("INV circular a=-r", vclose(a,[-r[0],-r[1]],1e-12));
+    // acceleration points toward origin: a parallel to -r
+    var adotNegR=a[0]*(-r[0])+a[1]*(-r[1]);
+    rec("INV circular a toward origin", adotNegR>0);
+  })();
+  (function(){
+    var P=PRESETS.parabolic;
+    rec("INV parabolic vx=1.2", close(P.v(3)[0],1.2,1e-12));
+    rec("INV parabolic ax=0", P.a(3)[0]===0);
+    rec("INV parabolic ay=-0.7", close(P.a(3)[1],-0.7,1e-12));
+    // peak when vy=0 -> t=2.4/0.7
+    var tp=2.4/0.7; rec("INV parabolic vy=0 at peak", close(P.v(tp)[1],0,1e-9));
+  })();
+  (function(){
+    var P=PRESETS.curved, h=1e-5, t=3.3;
+    var rp=P.r(t+h),rm=P.r(t-h);
+    var vnum=[(rp[0]-rm[0])/(2*h),(rp[1]-rm[1])/(2*h)];
+    rec("INV curved v≈central diff", vclose(vnum,P.v(t),1e-4));
+    var vp=P.v(t+h),vm=P.v(t-h);
+    var anum=[(vp[0]-vm[0])/(2*h),(vp[1]-vm[1])/(2*h)];
+    rec("INV curved a≈central diff", vclose(anum,P.a(t),1e-4));
+  })();
+
+  // ---- distance validation ----
+  Object.keys(PRESETS).forEach(function(key){
+    var P=PRESETS[key];
+    if(!P.dist && !P._distTable) P._distTable=buildDistanceTable(P);
+    rec("DIST "+key+" zero at t0", close(distanceAt(P,P.t0),0,1e-9));
+    // monotonic non-decreasing
+    var mono=true, prev=-1;
+    for(var i=0;i<=40;i++){ var t=P.t0+(P.t1-P.t0)*i/40; var dd=distanceAt(P,t); if(dd<prev-1e-6){mono=false;break;} prev=dd; }
+    rec("DIST "+key+" non-decreasing", mono);
+    // displacement <= distance
+    var tEnd=P.t1, rE=P.r(tEnd), r0=P.r(P.t0);
+    var dispMag=mag(rE[0]-r0[0],rE[1]-r0[1]);
+    rec("DIST "+key+" |Δr|≤distance", dispMag<=distanceAt(P,tEnd)+1e-6);
+  });
+  // specific distance formulas
+  rec("DIST constant =1.2·t", close(distanceAt(PRESETS.constant,5),1.2*5,1e-6));
+  rec("DIST circular =3·t", close(distanceAt(PRESETS.circular,2),3*2,1e-3));
+
+  // ---- element / handler presence ----
+  var ids=["stage","play","reset","stepB","stepF","tl","loop","vscale","gPosG","gVelG","gAccG","compass","score"];
+  ids.forEach(function(id){ rec("DOM #"+id+" present", !!document.getElementById(id)); });
+
+  renderReport(results,{TOLA:TOLA,TOLD:TOLD});
+  return results;
+}
+
+function renderReport(results,tol){
+  var pass=results.filter(function(r){return r.pass;}).length;
+  var fail=results.length-pass;
+  var sum=document.getElementById("vsum");
+  sum.innerHTML="<span class='pass'>"+pass+" passed</span> · <span class='"+(fail?"fail":"pass")+"'>"+fail+" failed</span> · "+
+    "abs tol (analytic) "+tol.TOLA+", derivative tol "+tol.TOLD+" · "+new Date().toLocaleString();
+  var rows=results.map(function(r){
+    return "<tr><td>"+r.name+"</td><td class='r "+(r.pass?"":"no")+"'>"+(r.pass?"PASS":"FAIL")+"</td><td>"+r.info+"</td></tr>";
+  }).join("");
+  document.getElementById("vtableWrap").innerHTML=
+    "<table class='vtable'><thead><tr><th>Test</th><th>Result</th><th>Info</th></tr></thead><tbody>"+rows+"</tbody></table>";
+  // console table
+  try{ console.table(results.map(function(r){return {test:r.name,result:r.pass?"PASS":"FAIL",info:r.info};})); }catch(e){}
+  console.log("Motion Vector Lab validation: "+pass+" passed, "+fail+" failed.");
+}
+document.getElementById("runTests").addEventListener("click",function(){
+  document.getElementById("validation").open=true; runValidationTests();
+});
+
+/* ================================================================
+   INIT
+   ================================================================ */
+loadPreset("constant");
+renderInstant();
+// auto-run tests if ?test=1
+if(/[?&]test=1/.test(location.search)){
+  document.getElementById("validation").open=true;
+  runValidationTests();
+}
+</script>
+</body>
+</html>
