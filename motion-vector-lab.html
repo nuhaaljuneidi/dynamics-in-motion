@@ -42,6 +42,12 @@
      letter-spacing:.13em;text-transform:uppercase;color:var(--gold);}
   .course-banner h1{margin:0;color:#fff;font-weight:700;line-height:1.08;font-size:clamp(1.85rem,4.2vw,2.9rem);letter-spacing:-.02em;}
   .course-banner .activity-id{margin:.55rem 0 0;font-family:"Source Code Pro",monospace;font-size:.76rem;letter-spacing:.08em;color:var(--gold);}
+  .student-row{display:flex;align-items:flex-end;gap:.8rem;flex-wrap:wrap;margin:-.2rem 0 1.25rem;padding:.8rem 0;border-bottom:1px solid var(--line);}
+  .student-field{display:flex;flex-direction:column;gap:.3rem;}
+  .student-row label,.submission label{font-weight:700;color:var(--navy);}
+  .student-row input{width:min(310px,100%);font:inherit;color:var(--ink);background:var(--paper);border:1px solid #9db1c8;border-radius:2px;padding:.6rem .7rem;outline:none;}
+  .student-row input:focus,.submission textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,94,184,.15);}
+  .submit-status{flex-basis:100%;min-height:1.2em;margin:0;font-size:.86rem;font-weight:700;color:var(--navy);}
   .lede{font-size:1.05rem;max-width:74ch;margin:0 0 1.4rem;line-height:1.6;color:#3e5269;}
 
   .layout{display:grid;grid-template-columns:1.5fr 1fr;gap:1.2rem;align-items:start;}
@@ -136,6 +142,16 @@
   .challenge .fb.good{color:var(--good);} .challenge .fb.bad{color:var(--bad);}
   .challenge .cta{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin-top:.6rem;}
 
+  .submission{margin-top:1.5rem;padding:1.25rem 0;border-top:2px solid var(--navy);border-bottom:1px solid var(--line);}
+  .submission h2{margin:0 0 .35rem;color:var(--navy);font-size:1.3rem;}
+  .submission p{margin:.25rem 0 .8rem;color:#3e5269;}
+  .submission label{display:block;margin-bottom:.35rem;}
+  .submission textarea{width:100%;min-height:95px;resize:vertical;font:inherit;line-height:1.5;color:var(--ink);background:var(--paper);border:1px solid #9db1c8;border-radius:2px;padding:.7rem;outline:none;}
+  .submission-actions{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:.8rem;}
+  .submission-actions .download{background:var(--gold);border-color:#d4a900;color:var(--navy);}
+  .submission-actions .download:hover{background:#e9b900;}
+  .final-status{min-height:1.3em;margin:.65rem 0 0!important;font-weight:700;color:var(--navy)!important;}
+
   details.validation{display:none;margin-top:1.5rem;border:1px solid var(--line);border-radius:2px;background:var(--paper);}
   details.validation>summary{cursor:pointer;padding:.8rem 1rem;font-weight:700;color:var(--navy);
      font-family:"Source Code Pro",monospace;letter-spacing:.04em;list-style:none;}
@@ -171,6 +187,19 @@
     <h1>Motion Vector Lab</h1>
     <p class="activity-id">ACTIVITY 03</p>
   </header>
+
+  <div class="student-row">
+    <div class="student-field">
+      <label for="studentName">Student name</label>
+      <input id="studentName" name="studentName" type="text" autocomplete="name" placeholder="Write your full name" required>
+    </div>
+    <div class="student-field">
+      <label for="studentEmail">Email <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+      <input id="studentEmail" name="studentEmail" type="email" autocomplete="email" placeholder="name@example.com">
+    </div>
+    <button id="startActivity" type="button">Start Activity</button>
+    <p id="submitStatus" class="submit-status" role="status" aria-live="polite"></p>
+  </div>
 
   <p class="lede">Position <strong>r(t)</strong>, velocity <strong>v(t) = dr/dt</strong>, and acceleration <strong>a(t) = dv/dt</strong> describe the same motion. Select a preset and observe how the trajectory, vectors, and x/y components remain connected at every instant. Velocity is tangent to the path; acceleration changes speed, direction, or both.</p>
 
@@ -357,6 +386,18 @@
       <p class="fb" id="chFb" role="status" aria-live="polite"></p>
     </div>
   </div>
+
+  <section class="submission" aria-labelledby="record-heading">
+    <h2 id="record-heading">Engineering Record</h2>
+    <p>Explain how the position, velocity, and acceleration vectors describe the selected motion.</p>
+    <label for="studentNotes">Interpretation</label>
+    <textarea id="studentNotes" placeholder="Describe the trajectory, vector directions, and how speed or direction changes."></textarea>
+    <div class="submission-actions">
+      <button id="submitWork" type="button">Submit My Work</button>
+      <button id="downloadSolution" class="download" type="button">Download Solution Image</button>
+    </div>
+    <p id="finalStatus" class="final-status" role="status" aria-live="polite"></p>
+  </section>
 
   <!-- ====================== VALIDATION ====================== -->
   <details class="validation" id="validation">
@@ -929,6 +970,98 @@ document.getElementById("chResetScore").addEventListener("click",function(){
 });
 
 /* ================================================================
+   STUDENT RECORD, GOOGLE SHEET LOGGING, AND SOLUTION DOWNLOAD
+   ================================================================ */
+var LOGGER_URL="https://script.google.com/macros/s/AKfycbwmh8vX2n26GHHKq9yIGjy3fanmZ_XQddXHSH3RmrtV3HdhrpO27E3zZvXswCfN9QRpXg/exec";
+function currentRecord(){
+  var P=state.P, r=P.r(state.t), v=P.v(state.t), a=P.a(state.t), r0=P.r(P.t0);
+  return {
+    preset:P.name,
+    time:state.t,
+    position:r,
+    velocity:v,
+    acceleration:a,
+    speed:mag(v[0],v[1]),
+    displacement:mag(r[0]-r0[0],r[1]-r0[1]),
+    distance:distanceAt(P,state.t)
+  };
+}
+function recordPayload(action){
+  var R=currentRecord();
+  return new URLSearchParams({
+    action:action,
+    studentName:document.getElementById("studentName").value.trim(),
+    email:document.getElementById("studentEmail").value.trim(),
+    activity:"Motion Vector Lab — Activity 03",
+    scenario:R.preset+" at t="+R.time.toFixed(2)+" s",
+    displacement:R.displacement.toFixed(3),
+    distance:R.distance.toFixed(3),
+    notes:document.getElementById("studentNotes").value.trim()+
+      " | score "+challenge.correct+"/"+challenge.total+
+      " | r=<"+R.position.map(function(x){return x.toFixed(3);}).join(", ")+">"+
+      " | v=<"+R.velocity.map(function(x){return x.toFixed(3);}).join(", ")+">"+
+      " | a=<"+R.acceleration.map(function(x){return x.toFixed(3);}).join(", ")+">"
+  });
+}
+function validateStudent(status){
+  var name=document.getElementById("studentName").value.trim();
+  var email=document.getElementById("studentEmail");
+  if(!name){status.textContent="Please enter your name first.";document.getElementById("studentName").focus();return false;}
+  if(email.value.trim()&&!email.checkValidity()){status.textContent="Please check the email address or leave it blank.";email.focus();return false;}
+  return true;
+}
+document.getElementById("startActivity").addEventListener("click",async function(){
+  var status=document.getElementById("submitStatus"); if(!validateStudent(status))return;
+  var button=this; button.disabled=true; button.textContent="Recording…"; status.textContent="Connecting to the activity log…";
+  try{
+    await fetch(LOGGER_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:recordPayload("start")});
+    status.textContent="Activity started. Your information was recorded."; button.textContent="Activity Started";
+  }catch(error){status.textContent="The activity could not be recorded. Check your connection and try again.";button.disabled=false;button.textContent="Start Activity";}
+});
+document.getElementById("submitWork").addEventListener("click",async function(){
+  var status=document.getElementById("finalStatus"); if(!validateStudent(status))return;
+  var button=this; button.disabled=true; button.textContent="Submitting…"; status.textContent="Saving your engineering record…";
+  try{
+    await fetch(LOGGER_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:recordPayload("complete")});
+    status.textContent="Work submitted. Your final vector results were recorded."; button.textContent="Work Submitted";
+  }catch(error){status.textContent="Your work could not be submitted. Check your connection and try again.";button.disabled=false;button.textContent="Submit My Work";}
+});
+function wrapCanvasText(ctx,text,x,y,maxWidth,lineHeight,maxLines){
+  var words=(text||"").split(/\s+/), line="", lines=0;
+  for(var i=0;i<words.length;i++){
+    var test=line+(line?" ":"")+words[i];
+    if(ctx.measureText(test).width>maxWidth&&line){ctx.fillText(line,x,y);y+=lineHeight;lines++;line=words[i];if(lines>=maxLines)return y;}
+    else line=test;
+  }
+  if(line&&lines<maxLines){ctx.fillText(line,x,y);y+=lineHeight;}
+  return y;
+}
+document.getElementById("downloadSolution").addEventListener("click",function(){
+  var status=document.getElementById("finalStatus"); if(!validateStudent(status))return;
+  var R=currentRecord(), name=document.getElementById("studentName").value.trim();
+  var canvas=document.createElement("canvas"); canvas.width=1600;canvas.height=1100;var ctx=canvas.getContext("2d");
+  ctx.fillStyle="#f4f7fb";ctx.fillRect(0,0,1600,1100);ctx.fillStyle="#002855";ctx.fillRect(0,0,1600,205);ctx.fillStyle="#ffcc00";ctx.fillRect(0,0,1600,8);
+  ctx.fillStyle="#fff";ctx.font="700 34px 'Source Sans 3',Arial";ctx.fillText("Dr. Nuha Aljuneidi",60,62);
+  ctx.fillStyle="#ffcc00";ctx.font="600 18px 'Source Code Pro',monospace";ctx.fillText("DYNAMICS IN MOTION · ACTIVITY 03",60,102);
+  ctx.fillStyle="#fff";ctx.font="700 46px 'Source Sans 3',Arial";ctx.fillText("Motion Vector Lab — Student Solution",60,166);
+  ctx.fillStyle="#10243e";ctx.font="700 23px 'Source Sans 3',Arial";ctx.fillText("Student: "+name,60,254);ctx.font="19px 'Source Sans 3',Arial";ctx.fillText("Date: "+new Date().toLocaleString(),60,286);
+  var svg=document.getElementById("stage").cloneNode(true);svg.setAttribute("xmlns","http://www.w3.org/2000/svg");
+  var blob=new Blob([new XMLSerializer().serializeToString(svg)],{type:"image/svg+xml;charset=utf-8"}),url=URL.createObjectURL(blob),img=new Image();
+  img.onload=function(){
+    ctx.drawImage(img,60,325,900,690);URL.revokeObjectURL(url);
+    ctx.fillStyle="#002855";ctx.font="700 25px 'Source Sans 3',Arial";ctx.fillText("Final Vector Record",1010,350);
+    ctx.fillStyle="#10243e";ctx.font="19px 'Source Code Pro',monospace";
+    var lines=["Preset: "+R.preset,"t = "+R.time.toFixed(2)+" s","r = <"+R.position.map(function(x){return x.toFixed(2);}).join(", ")+"> m","v = <"+R.velocity.map(function(x){return x.toFixed(2);}).join(", ")+"> m/s","a = <"+R.acceleration.map(function(x){return x.toFixed(2);}).join(", ")+"> m/s²","|v| = "+R.speed.toFixed(2)+" m/s","|Δr| = "+R.displacement.toFixed(2)+" m","Distance = "+R.distance.toFixed(2)+" m","Challenge score: "+challenge.correct+"/"+challenge.total];
+    lines.forEach(function(line,i){ctx.fillText(line,1010,400+i*42);});
+    ctx.fillStyle="#002855";ctx.font="700 23px 'Source Sans 3',Arial";ctx.fillText("Interpretation",1010,815);
+    ctx.fillStyle="#334b64";ctx.font="18px 'Source Sans 3',Arial";wrapCanvasText(ctx,document.getElementById("studentNotes").value.trim()||"No interpretation entered.",1010,852,520,25,7);
+    ctx.fillStyle="#002855";ctx.fillRect(0,1065,1600,35);ctx.fillStyle="#fff";ctx.font="15px 'Source Sans 3',Arial";ctx.fillText("Dynamics in Motion · Developed by Dr. Nuha Aljuneidi",60,1088);
+    var a=document.createElement("a");a.download="activity-03-motion-vector-lab-"+name.toLowerCase().replace(/[^a-z0-9]+/g,"-")+".png";a.href=canvas.toDataURL("image/png");a.click();status.textContent="Solution image downloaded.";
+  };
+  img.onerror=function(){URL.revokeObjectURL(url);status.textContent="The solution image could not be generated. Please try again.";};img.src=url;
+});
+
+/* ================================================================
    VALIDATION TEST SUITE
    ================================================================ */
 function expected(){
@@ -1043,7 +1176,7 @@ function runValidationTests(){
   rec("DIST circular =3·t", close(distanceAt(PRESETS.circular,2),3*2,1e-3));
 
   // ---- element / handler presence ----
-  var ids=["stage","play","reset","stepB","stepF","tl","loop","vscale","gPosG","gVelG","gAccG","compass","score"];
+  var ids=["stage","play","reset","stepB","stepF","tl","loop","vscale","gPosG","gVelG","gAccG","compass","score","studentName","studentEmail","startActivity","studentNotes","submitWork","downloadSolution"];
   ids.forEach(function(id){ rec("DOM #"+id+" present", !!document.getElementById(id)); });
 
   renderReport(results,{TOLA:TOLA,TOLD:TOLD});
