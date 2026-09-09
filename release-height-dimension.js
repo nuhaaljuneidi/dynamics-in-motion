@@ -1,1 +1,32 @@
-(function(){var ns='http://www.w3.org/2000/svg',svg=document.querySelector('.stage svg'),tick=document.getElementById('releaseTick'),oldLabel=document.getElementById('releaseLabel'),group=document.createElementNS(ns,'g');group.id='releaseHeightDimension';group.setAttribute('aria-label','Vertical release height');group.innerHTML='<line id="releaseHeightLine" x1="155" x2="155" stroke="#ffcc00" stroke-width="2"/><line id="releaseHeightTop" x1="145" x2="165" stroke="#ffcc00" stroke-width="2"/><line x1="145" y1="450" x2="165" y2="450" stroke="#ffcc00" stroke-width="2"/><text id="releaseHeightText" x="140" text-anchor="end" fill="#ffcc00" font-size="16" font-weight="700"></text>';svg.insertBefore(group,document.getElementById('trail'));function draw(){var y=Number(tick.getAttribute('y1')),value=document.getElementById('problemHeight').textContent;document.getElementById('releaseHeightLine').setAttribute('y1',y);document.getElementById('releaseHeightLine').setAttribute('y2',450);document.getElementById('releaseHeightTop').setAttribute('y1',y);document.getElementById('releaseHeightTop').setAttribute('y2',y);document.getElementById('releaseHeightText').setAttribute('y',(y+450)/2+5);document.getElementById('releaseHeightText').textContent=value;group.setAttribute('aria-label','Vertical release height: '+value);oldLabel.textContent='release point';oldLabel.setAttribute('y',y-8)}draw();new MutationObserver(draw).observe(document.getElementById('problemHeight'),{childList:true,characterData:true,subtree:true})})();
+(function () {
+  var ns = "http://www.w3.org/2000/svg";
+  var svg = document.querySelector(".stage svg");
+  var tick = document.getElementById("releaseTick");
+  var oldLabel = document.getElementById("releaseLabel");
+  var group = document.createElementNS(ns, "g");
+
+  group.id = "releaseHeightDimension";
+  group.setAttribute("aria-label", "Vertical release height");
+  group.innerHTML = '<line id="releaseHeightLine" x1="155" x2="155" stroke="#ffcc00" stroke-width="2"/><line id="releaseHeightTop" x1="145" x2="165" stroke="#ffcc00" stroke-width="2"/><line x1="145" y1="450" x2="165" y2="450" stroke="#ffcc00" stroke-width="2"/><text id="releaseHeightText" x="140" text-anchor="end" fill="#ffcc00" font-size="16" font-weight="700"></text>';
+  svg.insertBefore(group, document.getElementById("trail"));
+
+  function draw() {
+    var y = Number(tick.getAttribute("y1"));
+    var value = document.getElementById("problemHeight").textContent;
+    document.getElementById("releaseHeightLine").setAttribute("y1", y);
+    document.getElementById("releaseHeightLine").setAttribute("y2", 450);
+    document.getElementById("releaseHeightTop").setAttribute("y1", y);
+    document.getElementById("releaseHeightTop").setAttribute("y2", y);
+    document.getElementById("releaseHeightText").setAttribute("y", (y + 450) / 2 + 5);
+    document.getElementById("releaseHeightText").textContent = value;
+    group.setAttribute("aria-label", "Vertical release height: " + value);
+    oldLabel.textContent = "";
+  }
+
+  draw();
+  new MutationObserver(draw).observe(document.getElementById("problemHeight"), {
+    childList: true,
+    characterData: true,
+    subtree: true
+  });
+})();
