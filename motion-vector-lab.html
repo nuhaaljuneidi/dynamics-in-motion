@@ -269,7 +269,7 @@
         </div>
 
         <div class="controls">
-          <button class="play" id="play" aria-label="Play or pause">▶ Play</button>
+          <button class="play" id="play" aria-label="Play motion" aria-pressed="false">▶ Play</button>
           <button class="ghost" id="reset">⟲ Reset</button>
           <button class="ghost" id="stepB" aria-label="Step backward">⏮ Step</button>
           <button class="ghost" id="stepF" aria-label="Step forward">Step ⏭</button>
@@ -806,7 +806,10 @@ function tick(ts){
 }
 function setPlaying(on){
   state.playing=on;
-  document.getElementById("play").textContent = on?"⏸ Pause":"▶ Play";
+  var playButton=document.getElementById("play");
+  playButton.textContent = on?"⏸ Pause":"▶ Play";
+  playButton.setAttribute("aria-pressed",on?"true":"false");
+  playButton.setAttribute("aria-label",on?"Pause motion":"Play motion");
   if(on){ state.lastFrame=null; requestAnimationFrame(tick); }
 }
 
