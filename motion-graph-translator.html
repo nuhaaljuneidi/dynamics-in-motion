@@ -203,11 +203,11 @@
 
   <div class="presets">
     <span class="lbl">try a scenario:</span>
-    <button class="chip" data-p="rest">at rest</button>
-    <button class="chip" data-p="cruise">steady cruise</button>
-    <button class="chip" data-p="accel">speeding up</button>
-    <button class="chip" data-p="brake">slowing down</button>
-    <button class="chip" data-p="reverse">there &amp; back</button>
+    <button class="chip" data-p="rest" aria-pressed="false">at rest</button>
+    <button class="chip" data-p="cruise" aria-pressed="false">steady cruise</button>
+    <button class="chip" data-p="accel" aria-pressed="false">speeding up</button>
+    <button class="chip" data-p="brake" aria-pressed="false">slowing down</button>
+    <button class="chip" data-p="reverse" aria-pressed="false">there &amp; back</button>
   </div>
 
   <section class="note" aria-labelledby="interpret-heading">
@@ -487,11 +487,12 @@
       stop();
       var key=c.getAttribute("data-p");
       currentScenario=c.textContent.trim();
+      document.querySelectorAll(".chip").forEach(function(button){button.setAttribute("aria-pressed",button===c?"true":"false");});
       v=PRESETS[key].slice(); render();
     });
   });
   document.getElementById("reset").addEventListener("click",function(){
-    stop(); currentScenario="custom graph"; v=[0,0,0,0,0,0]; render();
+    stop(); currentScenario="custom graph"; document.querySelectorAll(".chip").forEach(function(button){button.setAttribute("aria-pressed","false");}); v=[0,0,0,0,0,0]; render();
   });
 
   // ---- Google Sheet activity registration ----
