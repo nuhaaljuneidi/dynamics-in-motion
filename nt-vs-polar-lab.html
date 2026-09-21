@@ -262,17 +262,6 @@
     return {x: seg.C.x + seg.R*Math.cos(seg.a), y: seg.C.y + seg.R*Math.sin(seg.a)};
   }
 
-  function polarStateAt(tt, O){
-    var pp = pathPoint(Math.min(1, Math.max(0, tt)));
-    var toC = vecSub(pp, O);
-    return { r: vecLen(toC) * M_PER_PX, theta: Math.atan2(toC.y, toC.x) };
-  }
-  function unwrapNear(a, ref){
-    while(a - ref > Math.PI) a -= 2*Math.PI;
-    while(a - ref < -Math.PI) a += 2*Math.PI;
-    return a;
-  }
-
   var t = 0, dir = 1;
   var playing = !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   var lastTs = null;
@@ -431,26 +420,21 @@
     var rM = rPx * M_PER_PX;
     var thetaDeg = Math.atan2(toCar.y, toCar.x) * 180/Math.PI;
 
-    // Polar velocity/acceleration built from r(t), theta(t) directly -- via
-    // numerical differentiation of the actual path, not vector projection --
-    // so the panel teaches the polar RECIPE (rdot, thetadot, ...) rather than
-    // just handing over final components.
-    var dTau = 0.02; // seconds, real time
-    var dtParam = dTau / REAL_TRAVEL_S;
-    var s0 = polarStateAt(t, O);
-    var sP = polarStateAt(t + dir*dtParam, O);
-    var sM = polarStateAt(t - dir*dtParam, O);
-    var thP = unwrapNear(sP.theta, s0.theta), thM = unwrapNear(sM.theta, s0.theta);
-
-    var rDot = (sP.r - sM.r) / (2*dTau);
-    var rDotDot = (sP.r - 2*s0.r + sM.r) / (dTau*dTau);
-    var thetaDot = (thP - thM) / (2*dTau);
-    var thetaDotDot = (thP - 2*s0.theta + thM) / (dTau*dTau);
-
-    var vr = rDot;
-    var vth = s0.r * thetaDot;
-    var ar = rDotDot - s0.r*thetaDot*thetaDot;
-    var ath = s0.r*thetaDotDot + 2*rDot*thetaDot;
+    // Polar velocity/acceleration derived from the TRUE v/a vectors (already
+    // known exactly -- v = V0*e_t, a = A_N*e_n -- for this idealized path),
+    // not from finite-differencing the path. That's not just tidier: right at
+    // the junction the path's curvature jumps discontinuously (rho: R1->R2),
+    // so a finite difference spanning the junction would blend two different
+    // physical accelerations into one spurious transient value. Projecting
+    // the exact instantaneous vectors has no such artifact -- a_r/a_theta
+    // jump cleanly at the junction, matching the idealization, with nothing
+    // to smooth over.
+    var vr = dot(vVec, eR), vth = dot(vVec, eTh);
+    var ar = dot(aVec, eR), ath = dot(aVec, eTh);
+    var rDot = vr;
+    var thetaDot = rM > 1e-6 ? vth / rM : 0;
+    var rDotDot = ar + rM*thetaDot*thetaDot;
+    var thetaDotDot = rM > 1e-6 ? (ath - 2*rDot*thetaDot) / rM : 0;
     var magPolar = Math.sqrt(vr*vr + vth*vth);
 
     document.getElementById('vt').textContent = fmt(V0,2) + ' m/s';
