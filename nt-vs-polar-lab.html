@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Compare normal-tangential and polar decompositions of the same car's motion around an S-curve, an interactive mechanical-engineering dynamics activity by Dr. Nuha Aljuneidi.">
+<title>N-T vs. Polar | Dr. Nuha Aljuneidi</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#10243e;--navy:#002855;--blue:#005eb8;--gold:#ffcc00;--paper:#fff;--line:#d9e3ef;--muted:#5f7084;
+        --nt:#1e8e82;--nt-soft:#dcf3f0;--polar:#c24e18;--polar-soft:#fbe6da;--ok:#1f7a4d;--road:#3a4048;--lane:#ffcc00;
+        --v-arrow:#10243e;--a-arrow:#6a4fa0;--car:#005eb8;--bg-canvas:#eef1f5;}
+  *{box-sizing:border-box}html,body{margin:0;padding:0;}
+  body{font-family:"Source Sans 3",system-ui,sans-serif;color:var(--ink);background:#f4f7fb;min-height:100vh;padding:clamp(1rem,3.5vw,2.5rem);display:flex;flex-direction:column;align-items:center;}
+  .wrap{width:100%;max-width:1120px;}
+
+  .activity-nav{display:flex;gap:.55rem;flex-wrap:wrap;margin:0 0 .8rem;}
+  .activity-nav a{font-weight:700;font-size:.9rem;text-decoration:none;color:var(--navy);background:var(--paper);border:1px solid #9db1c8;border-radius:2px;padding:.45rem .8rem;}
+  .activity-nav a[aria-current="page"]{background:var(--navy);border-color:var(--navy);color:#fff;}
+
+  .course-banner{background:var(--navy);color:#fff;border-top:6px solid var(--gold);padding:clamp(1.25rem,2.5vw,1.75rem);margin-bottom:1.45rem;}
+  .course-banner .instructor{margin:0 0 .3rem;font-size:clamp(1.25rem,2.5vw,1.65rem);font-weight:700;color:#fff;}
+  .course-banner .course-label{margin:0 0 .9rem;font-family:"Source Code Pro",monospace;font-size:.75rem;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--gold);}
+  .course-banner h1{margin:0;color:#fff;font-size:clamp(1.85rem,4.2vw,2.9rem);line-height:1.08;letter-spacing:-.02em;font-weight:700;}
+  .course-banner .activity-id{margin:.55rem 0 0;font-family:"Source Code Pro",monospace;font-size:.76rem;letter-spacing:.08em;color:var(--gold);}
+
+  .student-row{display:flex;align-items:flex-end;gap:.8rem;flex-wrap:wrap;margin:-.2rem 0 1.25rem;padding:.8rem 0;border-bottom:1px solid var(--line);}
+  .student-field{display:flex;flex-direction:column;gap:.3rem;}
+  .student-row label{font-weight:800;color:var(--navy);}
+  .student-row input{width:min(310px,100%);font:inherit;color:var(--ink);background:#fff;border:1px solid #9db1c8;border-radius:2px;padding:.6rem .7rem;outline:none;}
+  .student-row input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,94,184,.15);}
+  .submit-status{flex-basis:100%;margin:0;font-size:.86rem;min-height:1.2em;font-weight:700;color:var(--navy);}
+  .student-row button{font-family:"Source Sans 3",sans-serif;font-weight:700;font-size:.96rem;cursor:pointer;color:#fff;background:var(--blue);border:1px solid #004f9e;border-radius:2px;padding:.62rem 1.1rem;min-width:120px;transition:background .15s;}
+  .student-row button:hover{background:#004f9e}
+  .student-row button:focus-visible{outline:4px dashed var(--blue);outline-offset:3px}
+
+  .lede{font-size:1.05rem;max-width:76ch;margin:0 0 1.1rem;line-height:1.6;color:#3e5269;}
+
+  .origin-toggle{display:flex;gap:.55rem;flex-wrap:wrap;margin:0 0 1.1rem;}
+  .origin-toggle button{font-family:"Source Sans 3",sans-serif;font-weight:700;font-size:.86rem;padding:.55rem .9rem;border-radius:999px;border:1.5px solid #9db1c8;background:#fff;color:var(--muted);cursor:pointer;}
+  .origin-toggle button[aria-pressed="true"]{border-color:var(--polar);color:var(--polar);background:var(--polar-soft);}
+  .origin-toggle button:focus-visible{outline:3px solid var(--polar);outline-offset:2px}
+
+  .stage-frame{border:1px solid #173e68;border-radius:2px;overflow:hidden;box-shadow:0 4px 12px rgba(0,40,85,.08);margin-bottom:1.1rem;background:var(--paper);padding:.9rem;}
+  canvas#cv{width:100%;height:auto;display:block;border-radius:2px;background:var(--bg-canvas);aspect-ratio:800/540;}
+
+  .controls{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;margin-top:.8rem;}
+  .playbtn{width:40px;height:40px;border-radius:50%;border:1.5px solid #9db1c8;background:#fff;color:var(--ink);cursor:pointer;flex:none;display:flex;align-items:center;justify-content:center;}
+  .playbtn:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+  .playbtn .ico-pause{width:10px;height:12px;position:relative}
+  .playbtn .ico-pause::before,.playbtn .ico-pause::after{content:"";position:absolute;top:0;width:3px;height:12px;background:var(--ink);}
+  .playbtn .ico-pause::before{left:0}.playbtn .ico-pause::after{right:0}
+  .playbtn .ico-play{width:0;height:0;border-style:solid;border-width:6px 0 6px 10px;border-color:transparent transparent transparent var(--ink);margin-left:2px;}
+  input[type="range"]{flex:1;min-width:120px;accent-color:var(--polar)}
+  .scrub-label{font:600 .78rem "Source Code Pro",monospace;color:var(--muted);white-space:nowrap}
+
+  .legend{display:flex;gap:1.1rem;flex-wrap:wrap;font-size:.82rem;color:var(--muted);margin-top:.7rem;}
+  .legend span{display:inline-flex;align-items:center;gap:.4rem}
+  .swatch{width:14px;height:3px;border-radius:2px;display:inline-block}
+
+  .panels{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.1rem;}
+  @media(max-width:760px){.panels{grid-template-columns:1fr}}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:2px;padding:1rem 1.1rem;}
+  .card h2{margin:0 0 .25rem;font-size:.98rem;font-weight:700;display:flex;align-items:center;gap:.5rem;color:var(--navy);}
+  .dot{width:10px;height:10px;border-radius:50%;flex:none}
+  .card .cap{margin:0 0 .7rem;font-size:.78rem;color:var(--muted);line-height:1.4}
+  .rows{display:grid;grid-template-columns:auto 1fr;row-gap:.4rem;column-gap:.6rem;font:600 .88rem "Source Code Pro",monospace;}
+  .rows dt{color:var(--muted);font-weight:500}
+  .rows dd{margin:0;text-align:right;font-weight:700}
+  .rows dd small{color:var(--muted);font-weight:400;font-size:.7rem}
+  .check{grid-column:1/-1;margin-top:.7rem;padding:.55rem .7rem;border-radius:2px;background:var(--nt-soft);font:600 .76rem "Source Code Pro",monospace;color:var(--nt);line-height:1.5;}
+  .check b{color:var(--ok)}
+
+  .note{margin-top:0;padding:1rem 0 1.1rem;border-top:2px solid var(--navy);border-bottom:1px solid var(--line);font-size:1rem;line-height:1.65;}
+  .note h2{margin:0 0 .45rem;font-size:1.05rem;letter-spacing:.08em;text-transform:uppercase;color:var(--navy);}
+  .note p{margin:0 0 .6rem}
+  .note p:last-child{margin-bottom:0}
+  .note strong{color:var(--polar)}
+  .note .nt-word{color:var(--nt);font-weight:700}
+
+  .submission{margin-top:1.5rem;padding:1.25rem 0;border-top:2px solid var(--navy);border-bottom:1px solid var(--line);}
+  .submission h2{margin:0 0 .35rem;color:var(--navy);font-size:1.3rem;}
+  .submission p{margin:.25rem 0 .8rem;color:#3e5269;}
+  .submission textarea{width:100%;min-height:95px;resize:vertical;font:inherit;line-height:1.5;color:var(--ink);background:#fff;border:1px solid #9db1c8;border-radius:2px;padding:.7rem;outline:none;}
+  .submission textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,94,184,.15);}
+  .submission-actions{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:.8rem;}
+  .submission-actions button{font-family:"Source Sans 3",sans-serif;font-weight:700;font-size:.96rem;cursor:pointer;color:#fff;background:var(--blue);border:1px solid #004f9e;border-radius:2px;padding:.62rem 1.1rem;min-width:120px;}
+  .submission-actions button:hover{background:#004f9e}
+  .submission-actions button.download{background:var(--gold);border-color:#d4a900;color:var(--navy);}
+  .submission-actions button.download:hover{background:#e9b900}
+  .final-status{min-height:1.3em;margin:.65rem 0 0!important;font-weight:700;color:var(--navy)!important;}
+
+  footer{margin-top:1.8rem;padding-top:1rem;border-top:1px solid var(--line);font-family:"Source Code Pro",monospace;font-size:.78rem;color:var(--muted);}
+  @media(max-width:600px){.student-row{align-items:flex-start;flex-direction:column;}.student-row input{width:100%;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="activity-nav" aria-label="Dynamics activities">
+    <a href="index.html">Activity 01: Distance &amp; Displacement</a>
+    <a href="motion-graph-translator.html">Activity 02: Motion Graph Translator</a>
+    <a href="motion-vector-lab.html">Activity 03: Motion Vector Lab</a>
+    <a href="velocity-axis-lab.html">Activity 04: Relationship Lab</a>
+    <a href="example-10-projectile.html">Activity 05: Example 10</a>
+    <a href="nt-vs-polar-lab.html" aria-current="page">Activity 06: N-T vs. Polar</a>
+  </nav>
+
+  <header class="course-banner">
+    <p class="instructor">Dr. Nuha Aljuneidi</p>
+    <p class="course-label">Dynamics in Motion &middot; Mechanical Engineering</p>
+    <h1>N-T <span class="vs">vs.</span> Polar</h1>
+    <p class="activity-id">ACTIVITY 06</p>
+  </header>
+
+  <div class="student-row">
+    <div class="student-field"><label for="studentName">Student name</label><input id="studentName" type="text" autocomplete="name" placeholder="Write your full name" required></div>
+    <div class="student-field"><label for="studentEmail">Email <span style="font-weight:400;color:var(--muted)">(optional)</span></label><input id="studentEmail" type="email" autocomplete="email" placeholder="name@example.com"></div>
+    <button id="startActivity" type="button">Start Activity</button>
+    <p id="submitStatus" class="submit-status" role="status" aria-live="polite"></p>
+  </div>
+
+  <p class="lede">A car takes an S-curve on-ramp at a constant 15&nbsp;m/s &mdash; one bend, then a tighter one curving the other way. n-t and polar decompose the exact same velocity and acceleration vectors along different axes. Toggle the origin and watch when the two methods agree &mdash; and when they don't.</p>
+
+  <div class="origin-toggle" role="group" aria-label="Choose where the polar origin sits">
+    <button id="btn-center" type="button" aria-pressed="true">Origin at C&#8321; (first bend)</button>
+    <button id="btn-offset" type="button" aria-pressed="false">Origin at a roadside marker</button>
+  </div>
+
+  <div class="stage-frame">
+    <canvas id="cv" width="800" height="540" role="img" aria-label="Animated car traveling along an S-curve road, with velocity and acceleration vectors shown"></canvas>
+    <div class="controls">
+      <button class="playbtn" id="playBtn" aria-label="Pause animation" aria-pressed="true"><span class="ico-pause"></span></button>
+      <input id="scrub" type="range" min="0" max="1000" value="0" aria-label="Car position along the curve">
+      <span class="scrub-label" id="scrubLabel">t = 0%</span>
+    </div>
+    <div class="legend">
+      <span><i class="swatch" style="background:var(--v-arrow)"></i> velocity v (true vector)</span>
+      <span><i class="swatch" style="background:var(--a-arrow); opacity:.85"></i> acceleration a (true vector)</span>
+      <span><i class="swatch" style="background:var(--nt)"></i> &rho;, e_n line (car &rarr; active bend center)</span>
+      <span><i class="swatch" style="background:var(--polar)"></i> r, e_r line (car &rarr; origin O)</span>
+    </div>
+  </div>
+
+  <div class="panels">
+    <div class="card">
+      <h2><span class="dot" style="background:var(--nt)"></span>Normal&#8211;Tangential (e_t, e_n)</h2>
+      <p class="cap">Axes ride with the car: e_t always points along its motion, e_n always points into the turn.</p>
+      <dl class="rows">
+        <dt>v_t</dt><dd id="vt">&mdash;</dd>
+        <dt>v_n</dt><dd id="vn">&mdash;</dd>
+        <dt>a_t</dt><dd id="at">&mdash;</dd>
+        <dt>a_n</dt><dd id="an">&mdash;</dd>
+        <dt>&rho; <small>(path curvature)</small></dt><dd id="rho">&mdash;</dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <h2><span class="dot" style="background:var(--polar)"></span>Polar (e_r, e_&theta;)</h2>
+      <p class="cap" id="polarCap">Axes are anchored to a fixed point O; e_r always points outward from O to the car.</p>
+      <dl class="rows">
+        <dt>r <small>(dist. to O)</small></dt><dd id="r">&mdash;</dd>
+        <dt>&theta;</dt><dd id="theta">&mdash;</dd>
+        <dt>v_r</dt><dd id="vr">&mdash;</dd>
+        <dt>v_&theta;</dt><dd id="vth">&mdash;</dd>
+        <dt>a_r</dt><dd id="ar">&mdash;</dd>
+        <dt>a_&theta;</dt><dd id="ath">&mdash;</dd>
+        <dd class="check">|v| check: &radic;(v_t&sup2;+v_n&sup2;) = &radic;(v_r&sup2;+v_&theta;&sup2;) = <b id="vcheck">&mdash;</b> m/s</dd>
+      </dl>
+    </div>
+  </div>
+
+  <section class="note" aria-labelledby="insight-heading">
+    <h2 id="insight-heading">Interpreting the Motion</h2>
+    <p id="insight"></p>
+  </section>
+
+  <section class="submission" aria-labelledby="record-heading">
+    <h2 id="record-heading">Engineering Record</h2>
+    <p>Explain, in your own words, why n-t's a_n changed value partway through the curve while polar's origin never moved.</p>
+    <label for="studentNotes">Interpretation</label>
+    <textarea id="studentNotes" placeholder="Describe what happens to rho, C, r, and O as the car crosses from the first bend into the second."></textarea>
+    <div class="submission-actions">
+      <button id="submitWork" type="button">Submit My Work</button>
+      <button id="downloadSolution" class="download" type="button">Download Solution Image</button>
+    </div>
+    <p id="finalStatus" class="final-status" role="status" aria-live="polite"></p>
+  </section>
+
+  <footer>Dynamics in Motion &middot; Developed by Dr. Nuha Aljuneidi</footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var canvas = document.getElementById('cv');
+  var ctx = canvas.getContext('2d');
+  var DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+
+  function fitCanvas(){
+    var rect = canvas.getBoundingClientRect();
+    canvas.width = Math.round(rect.width * DPR);
+    canvas.height = Math.round(rect.width * (540/800) * DPR);
+  }
+  window.addEventListener('resize', fitCanvas);
+
+  function vecSub(p,q){ return {x:p.x-q.x, y:p.y-q.y}; }
+  function vecAdd(p,q){ return {x:p.x+q.x, y:p.y+q.y}; }
+  function vecLen(p){ return Math.sqrt(p.x*p.x+p.y*p.y); }
+  function vecNorm(p){ var l = vecLen(p)||1; return {x:p.x/l, y:p.y/l}; }
+  function vecScale(p,s){ return {x:p.x*s, y:p.y*s}; }
+  function dot(p,q){ return p.x*q.x + p.y*q.y; }
+  function rot90(p){ return {x:-p.y, y:p.x}; }
+
+  var J = {x:400, y:300};
+  var TANGENT_DEG = -18;
+  var tanDir = {x:Math.cos(TANGENT_DEG*Math.PI/180), y:Math.sin(TANGENT_DEG*Math.PI/180)};
+  var nrmDir = rot90(tanDir);
+
+  var R1 = 150, R2 = 105;
+  var C1 = vecAdd(J, vecScale(nrmDir, R1));
+  var C2 = vecSub(J, vecScale(nrmDir, R2));
+
+  var M_PER_PX = 40 / R1;
+  var V0 = 15;
+
+  var angle1_J = Math.atan2(-nrmDir.y, -nrmDir.x);
+  var angle2_J = Math.atan2( nrmDir.y,  nrmDir.x);
+  var SWEEP_A = 122 * Math.PI/180, SWEEP_B = 122 * Math.PI/180;
+
+  var O_C1 = {x:C1.x, y:C1.y};
+  var O_MARKER = {x:150, y:460};
+  var originMode = 'c1';
+
+  function segmentAt(t){
+    if(t <= 0.5){
+      var sA = t/0.5;
+      return {C:C1, R:R1, a: (angle1_J+SWEEP_A) + (angle1_J-(angle1_J+SWEEP_A))*sA};
+    }
+    var sB = (t-0.5)/0.5;
+    return {C:C2, R:R2, a: angle2_J + (SWEEP_B)*sB};
+  }
+
+  function pathPoint(t){
+    var seg = segmentAt(t);
+    return {x: seg.C.x + seg.R*Math.cos(seg.a), y: seg.C.y + seg.R*Math.sin(seg.a)};
+  }
+
+  var t = 0, dir = 1;
+  var playing = !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var lastTs = null;
+  var DURATION = 5.5;
+
+  function step(ts){
+    if(lastTs==null) lastTs = ts;
+    var dt = (ts-lastTs)/1000; lastTs = ts;
+    if(playing){
+      t += dir * dt / DURATION;
+      if(t >= 1){ t = 1; dir = -1; }
+      if(t <= 0){ t = 0; dir = 1; }
+      syncScrub();
+    }
+    render();
+    requestAnimationFrame(step);
+  }
+
+  function syncScrub(){
+    var el = document.getElementById('scrub');
+    el.value = String(Math.round(t*1000));
+    document.getElementById('scrubLabel').textContent = 't = ' + Math.round(t*100) + '%';
+  }
+
+  function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+  function fmt(n, d){ return n.toFixed(d==null?2:d); }
+
+  function drawArrow(ctx, from, dirVec, len, color, width, dashed){
+    var to = {x: from.x + dirVec.x*len, y: from.y + dirVec.y*len};
+    ctx.save();
+    ctx.strokeStyle = color; ctx.fillStyle = color;
+    ctx.lineWidth = width;
+    ctx.setLineDash(dashed ? [7,5] : []);
+    ctx.beginPath(); ctx.moveTo(from.x, from.y); ctx.lineTo(to.x, to.y); ctx.stroke();
+    ctx.setLineDash([]);
+    var ang = Math.atan2(dirVec.y, dirVec.x);
+    var headLen = Math.max(8, width*2.6);
+    ctx.beginPath();
+    ctx.moveTo(to.x, to.y);
+    ctx.lineTo(to.x - headLen*Math.cos(ang-0.4), to.y - headLen*Math.sin(ang-0.4));
+    ctx.lineTo(to.x - headLen*Math.cos(ang+0.4), to.y - headLen*Math.sin(ang+0.4));
+    ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+
+  var lastVals = null;
+
+  function render(){
+    fitCanvas();
+    ctx.save();
+    ctx.scale(canvas.width/800, canvas.height/540);
+    ctx.clearRect(0,0,800,540);
+
+    var bg = cssVar('--bg-canvas'), road = cssVar('--road'), lane = cssVar('--lane'),
+        nt = cssVar('--nt'), polar = cssVar('--polar'), ink = cssVar('--ink'),
+        sub = cssVar('--muted'), vArrow = cssVar('--v-arrow'), aArrow = cssVar('--a-arrow'),
+        car = cssVar('--car');
+
+    ctx.fillStyle = bg; ctx.fillRect(0,0,800,540);
+
+    ctx.save();
+    ctx.strokeStyle = road; ctx.lineWidth = 34; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.arc(C1.x, C1.y, R1, angle1_J+SWEEP_A, angle1_J, true); ctx.stroke();
+    ctx.beginPath(); ctx.arc(C2.x, C2.y, R2, angle2_J, angle2_J+SWEEP_B, false); ctx.stroke();
+    ctx.strokeStyle = lane; ctx.lineWidth = 2.5; ctx.setLineDash([12,12]);
+    ctx.beginPath(); ctx.arc(C1.x, C1.y, R1, angle1_J+SWEEP_A, angle1_J, true); ctx.stroke();
+    ctx.beginPath(); ctx.arc(C2.x, C2.y, R2, angle2_J, angle2_J+SWEEP_B, false); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+
+    var P = pathPoint(t);
+    var seg = segmentAt(t);
+    var Cactive = seg.C, Ractive = seg.R;
+    var eps = 0.002;
+    var tF = Math.min(1, Math.max(0, t + dir*eps));
+    var eT = vecNorm(vecSub(pathPoint(tF), P));
+    if(vecLen(vecSub(pathPoint(tF),P)) < 1e-6){ eT = vecNorm(vecSub(P, pathPoint(t - dir*eps))); }
+    var eN = vecNorm(vecSub(Cactive, P));
+
+    var O = originMode === 'c1' ? O_C1 : O_MARKER;
+    var toCar = vecSub(P, O);
+    var rPx = vecLen(toCar);
+    var eR = rPx > 1e-6 ? vecNorm(toCar) : {x:1,y:0};
+    var eTh = rot90(eR);
+
+    var rhoM = Ractive * M_PER_PX;
+    var A_N = (V0*V0) / rhoM;
+
+    ctx.save();
+    ctx.strokeStyle = nt; ctx.lineWidth = 2; ctx.setLineDash([5,5]);
+    ctx.beginPath(); ctx.moveTo(Cactive.x,Cactive.y); ctx.lineTo(P.x,P.y); ctx.stroke();
+    ctx.setLineDash([]); ctx.restore();
+
+    ctx.save();
+    ctx.strokeStyle = polar; ctx.lineWidth = 2; ctx.setLineDash([2,6]);
+    ctx.beginPath(); ctx.moveTo(O.x,O.y); ctx.lineTo(P.x,P.y); ctx.stroke();
+    ctx.setLineDash([]); ctx.restore();
+
+    [{p:C1,label:'C₁',active:seg.C===C1}, {p:C2,label:'C₂',active:seg.C===C2}].forEach(function(m){
+      ctx.save();
+      ctx.strokeStyle = nt; ctx.fillStyle = m.active ? nt : bg; ctx.lineWidth = 1.6;
+      ctx.beginPath(); ctx.arc(m.p.x,m.p.y,5,0,7); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = m.active ? ink : sub; ctx.font = (m.active?'700 ':'500 ') + '12px "Source Sans 3",sans-serif';
+      ctx.fillText(m.label, m.p.x+9, m.p.y-8);
+      ctx.restore();
+    });
+
+    ctx.save();
+    ctx.fillStyle = polar; ctx.beginPath(); ctx.arc(O.x,O.y,5,0,7); ctx.fill();
+    ctx.fillStyle = ink; ctx.font = '700 13px "Source Sans 3",sans-serif';
+    ctx.fillText('O', O.x+9, O.y-8);
+    ctx.restore();
+
+    var vVec = {x: eT.x*V0, y: eT.y*V0};
+    var aVec = {x: eN.x*A_N, y: eN.y*A_N};
+    drawArrow(ctx, P, eT, 60, vArrow, 3, false);
+    drawArrow(ctx, P, eN, Math.min(50, A_N*7), aArrow, 2.5, true);
+
+    ctx.save();
+    ctx.translate(P.x, P.y);
+    ctx.rotate(Math.atan2(eT.y, eT.x));
+    ctx.fillStyle = car;
+    ctx.beginPath();
+    ctx.roundRect ? ctx.roundRect(-14,-8,28,16,5) : ctx.rect(-14,-8,28,16);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(0,0,0,.35)';
+    ctx.beginPath(); ctx.arc(-8,8,3.4,0,7); ctx.arc(8,8,3.4,0,7); ctx.fill();
+    ctx.restore();
+
+    ctx.restore();
+
+    var vr = dot(vVec, eR), vth = dot(vVec, eTh);
+    var ar = dot(aVec, eR), ath = dot(aVec, eTh);
+    var rM = rPx * M_PER_PX;
+    var thetaDeg = Math.atan2(toCar.y, toCar.x) * 180/Math.PI;
+    var magPolar = Math.sqrt(vr*vr + vth*vth);
+
+    document.getElementById('vt').textContent = fmt(V0,2) + ' m/s';
+    document.getElementById('vn').textContent = '0.00 m/s';
+    document.getElementById('at').textContent = '0.00 m/s²';
+    document.getElementById('an').textContent = fmt(A_N,2) + ' m/s²';
+    document.getElementById('rho').textContent = fmt(rhoM,1) + ' m';
+
+    document.getElementById('r').textContent = fmt(rM,2) + ' m';
+    document.getElementById('theta').textContent = fmt(thetaDeg,1) + '°';
+    document.getElementById('vr').textContent = fmt(vr,2) + ' m/s';
+    document.getElementById('vth').textContent = fmt(vth,2) + ' m/s';
+    document.getElementById('ar').textContent = fmt(ar,2) + ' m/s²';
+    document.getElementById('ath').textContent = fmt(ath,2) + ' m/s²';
+    document.getElementById('vcheck').textContent = fmt((V0+magPolar)/2, 2);
+
+    lastVals = {vt:V0, vn:0, at:0, an:A_N, rho:rhoM, r:rM, theta:thetaDeg, vr:vr, vth:vth, ar:ar, ath:ath};
+  }
+
+  function updateInsight(){
+    var cap = document.getElementById('polarCap');
+    var insight = document.getElementById('insight');
+    if(originMode === 'c1'){
+      cap.textContent = 'O is fixed at C₁ — the first bend\'s center. It stays there even after the road (and n-t\'s own center) moves on to the second bend.';
+      insight.innerHTML = 'Watch what n-t\'s reference point does: it <strong>jumps from C₁ to C₂</strong> the instant the car crosses into the second bend — &rho; changes with it, because curvature is a local property of the road itself. <span class="nt-word">O never moves</span> — that\'s the definition of a fixed origin. On the first bend, O happens to sit exactly at C₁, so r = &rho; here. Cross into the second bend and that coincidence breaks immediately, even though O never moved at all.';
+    } else {
+      cap.textContent = 'O is a fixed roadside marker, away from either bend.';
+      insight.innerHTML = 'With O off at a marker, r (orange line) and &rho; (' + '<span class="nt-word">teal line</span>' + ') are visibly different throughout — and &rho; itself still jumps from C₁ to C₂ mid-curve, independent of where O sits. <span class="nt-word">n-t\'s axes are a local property of the road</span>; polar\'s axes are anchored to whatever fixed point you chose. Same car, same v, same a — the numbers differ only because the reference is different.';
+    }
+  }
+
+  document.getElementById('btn-center').addEventListener('click', function(){
+    originMode = 'c1';
+    this.setAttribute('aria-pressed','true');
+    document.getElementById('btn-offset').setAttribute('aria-pressed','false');
+    updateInsight();
+  });
+  document.getElementById('btn-offset').addEventListener('click', function(){
+    originMode = 'marker';
+    this.setAttribute('aria-pressed','true');
+    document.getElementById('btn-center').setAttribute('aria-pressed','false');
+    updateInsight();
+  });
+
+  var playBtn = document.getElementById('playBtn');
+  function setPlayIcon(){
+    playBtn.innerHTML = playing ? '<span class="ico-pause"></span>' : '<span class="ico-play"></span>';
+  }
+  playBtn.addEventListener('click', function(){
+    playing = !playing;
+    setPlayIcon();
+    playBtn.setAttribute('aria-pressed', String(playing));
+    playBtn.setAttribute('aria-label', playing ? 'Pause animation' : 'Play animation');
+  });
+
+  var scrub = document.getElementById('scrub');
+  scrub.addEventListener('input', function(){
+    playing = false;
+    playBtn.innerHTML = '<span class="ico-play"></span>';
+    playBtn.setAttribute('aria-pressed','false');
+    playBtn.setAttribute('aria-label','Play animation');
+    t = Number(scrub.value)/1000;
+    document.getElementById('scrubLabel').textContent = 't = ' + Math.round(t*100) + '%';
+  });
+
+  if(!playing){ playBtn.innerHTML = '<span class="ico-play"></span>'; playBtn.setAttribute('aria-pressed','false'); playBtn.setAttribute('aria-label','Play animation'); }
+
+  updateInsight();
+  fitCanvas();
+  requestAnimationFrame(step);
+
+  // ---- student tracking / submission (matches the rest of the site) ----
+  var LOGGER_URL = "https://script.google.com/macros/s/AKfycbwmh8vX2n26GHHKq9yIGjy3fanmZ_XQddXHSH3RmrtV3HdhrpO27E3zZvXswCfN9QRpXg/exec";
+
+  function validateStudent(status){
+    var name = document.getElementById("studentName").value.trim();
+    var email = document.getElementById("studentEmail");
+    if(!name){ status.textContent = "Please enter your name first."; document.getElementById("studentName").focus(); return false; }
+    if(email.value.trim() && !email.checkValidity()){ status.textContent = "Please check the email address or leave it blank."; return false; }
+    return true;
+  }
+
+  function payload(action){
+    var v = lastVals || {};
+    return new URLSearchParams({
+      action: action,
+      studentName: document.getElementById("studentName").value.trim(),
+      email: document.getElementById("studentEmail").value.trim(),
+      activity: "N-T vs. Polar — Activity 06",
+      scenario: "Origin: " + (originMode === 'c1' ? 'C1 (first bend)' : 'roadside marker') + ", t=" + Math.round(t*100) + "%",
+      displacement: v.r!=null ? String(v.r.toFixed(2)) : '',
+      distance: v.rho!=null ? String(v.rho.toFixed(2)) : '',
+      notes: document.getElementById("studentNotes").value.trim()
+    });
+  }
+
+  document.getElementById("startActivity").addEventListener("click", async function(){
+    var status = document.getElementById("submitStatus"); if(!validateStudent(status)) return;
+    var button = this; button.disabled = true; button.textContent = "Recording…"; status.textContent = "Connecting to the activity log…";
+    try{
+      await fetch(LOGGER_URL, {method:"POST", mode:"no-cors", headers:{"Content-Type":"application/x-www-form-urlencoded"}, body: payload("start")});
+      status.textContent = "Activity started. Your information was recorded."; button.textContent = "Activity Started";
+    }catch(error){
+      status.textContent = "The activity could not be recorded. Check your connection and try again."; button.disabled = false; button.textContent = "Start Activity";
+    }
+  });
+
+  document.getElementById("submitWork").addEventListener("click", async function(){
+    var status = document.getElementById("finalStatus"); if(!validateStudent(status)) return;
+    var button = this; button.disabled = true; button.textContent = "Submitting…"; status.textContent = "Sending your final results…";
+    try{
+      await fetch(LOGGER_URL, {method:"POST", mode:"no-cors", headers:{"Content-Type":"application/x-www-form-urlencoded"}, body: payload("complete")});
+      status.textContent = "Work submitted. Your results were recorded."; button.textContent = "Work Submitted";
+    }catch(error){
+      status.textContent = "Submission failed. Check your connection and try again."; button.disabled = false; button.textContent = "Submit My Work";
+    }
+  });
+
+  function wrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines){
+    var words = (text || "No interpretation provided.").split(/\s+/), line = "", lines = 0;
+    for(var i=0;i<words.length;i++){
+      var test = line ? line + " " + words[i] : words[i];
+      if(ctx.measureText(test).width > maxWidth && line){ ctx.fillText(line, x, y+lines*lineHeight); lines++; line = words[i]; if(lines>=maxLines) break; }
+      else line = test;
+    }
+    if(lines < maxLines && line) ctx.fillText(line, x, y+lines*lineHeight);
+  }
+
+  document.getElementById("downloadSolution").addEventListener("click", async function(){
+    var status = document.getElementById("finalStatus"); if(!validateStudent(status)) return;
+    var button = this; button.disabled = true; button.textContent = "Creating Image…";
+    try{
+      var name = document.getElementById("studentName").value.trim();
+      var out = document.createElement("canvas"); out.width = 1600; out.height = 1240;
+      var octx = out.getContext("2d");
+      octx.fillStyle = "#fff"; octx.fillRect(0,0,1600,1240);
+      octx.fillStyle = "#ffcc00"; octx.fillRect(0,0,1600,14);
+      octx.fillStyle = "#002855"; octx.fillRect(0,14,1600,180);
+      octx.fillStyle = "#fff"; octx.font = "700 34px 'Source Sans 3',Arial"; octx.fillText("Dr. Nuha Aljuneidi", 60, 72);
+      octx.fillStyle = "#ffcc00"; octx.font = "600 20px 'Source Code Pro',monospace"; octx.fillText("DYNAMICS IN MOTION · N-T VS. POLAR", 60, 112);
+      octx.fillStyle = "#fff"; octx.font = "700 44px 'Source Sans 3',Arial"; octx.fillText("Student Solution Record", 60, 165);
+
+      octx.fillStyle = "#10243e"; octx.font = "700 24px 'Source Sans 3',Arial"; octx.fillText("Student: "+name, 60, 238);
+      octx.font = "20px 'Source Sans 3',Arial"; octx.fillText("Date: "+new Date().toLocaleString(), 60, 275); octx.fillText("Activity 06", 1400, 238);
+
+      octx.drawImage(canvas, 110, 315, 1380, 932);
+
+      octx.fillStyle = "#002855"; octx.font = "700 25px 'Source Sans 3',Arial"; octx.fillText("Final Readout", 60, 1140);
+      octx.fillStyle = "#10243e"; octx.font = "18px 'Source Sans 3',Arial";
+      var v = lastVals || {};
+      octx.fillText("a_n = " + (v.an!=null?v.an.toFixed(2):'--') + " m/s²   ρ = " + (v.rho!=null?v.rho.toFixed(1):'--') + " m", 60, 1140);
+      octx.fillText("r = " + (v.r!=null?v.r.toFixed(2):'--') + " m   a_r = " + (v.ar!=null?v.ar.toFixed(2):'--') + " m/s²", 700, 1140);
+
+      octx.fillStyle = "#334b64"; octx.font = "17px 'Source Sans 3',Arial";
+      wrapText(octx, document.getElementById("studentNotes").value.trim(), 60, 1175, 1480, 24, 2);
+
+      octx.fillStyle = "#002855"; octx.fillRect(0,1212,1600,28);
+      octx.fillStyle = "#fff"; octx.font = "14px 'Source Sans 3',Arial"; octx.fillText("Dynamics in Motion · Developed by Dr. Nuha Aljuneidi", 60, 1232);
+
+      var a = document.createElement("a");
+      a.download = "nt-vs-polar-solution-" + name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"") + ".png";
+      a.href = out.toDataURL("image/png"); a.click();
+      status.textContent = "Solution image downloaded.";
+    }catch(error){
+      status.textContent = "The solution image could not be created. Please try again.";
+    }finally{
+      button.disabled = false; button.textContent = "Download Solution Image";
+    }
+  });
+})();
+</script>
+</body>
+</html>
