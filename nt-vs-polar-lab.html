@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{--ink:#10243e;--navy:#002855;--blue:#005eb8;--gold:#ffcc00;--paper:#fff;--line:#d9e3ef;--muted:#5f7084;
-        --nt:#1e8e82;--nt-soft:#dcf3f0;--polar:#c24e18;--polar-soft:#fbe6da;--ok:#1f7a4d;--road:#3a4048;--lane:#ffcc00;
+        --nt:#1e8e82;--nt-soft:#dcf3f0;--polar:#c24e18;--polar-soft:#fbe6da;--ok:#1f7a4d;--bad:#b3261e;--bad-soft:#fbe4e2;--road:#3a4048;--lane:#ffcc00;
         --v-arrow:#10243e;--a-arrow:#6a4fa0;--car:#005eb8;--bg-canvas:#eef1f5;}
   *{box-sizing:border-box}html,body{margin:0;padding:0;}
   body{font-family:"Source Sans 3",system-ui,sans-serif;color:var(--ink);background:#f4f7fb;min-height:100vh;padding:clamp(1rem,3.5vw,2.5rem);display:flex;flex-direction:column;align-items:center;}
@@ -37,13 +37,21 @@
   .lede{font-size:1.05rem;max-width:76ch;margin:0 0 1.1rem;line-height:1.6;color:#3e5269;}
   .math{font:600 .96rem "Source Code Pro",monospace;color:var(--navy)}
 
-  .origin-toggle{display:flex;gap:.55rem;flex-wrap:wrap;margin:0 0 1.1rem;}
+  .origin-toggle{display:flex;align-items:center;gap:.55rem;flex-wrap:wrap;margin:0 0 1.1rem;}
   .origin-toggle button{font-family:"Source Sans 3",sans-serif;font-weight:700;font-size:.86rem;padding:.55rem .9rem;border-radius:999px;border:1.5px solid #9db1c8;background:#fff;color:var(--muted);cursor:pointer;}
-  .origin-toggle button[aria-pressed="true"]{border-color:var(--polar);color:var(--polar);background:var(--polar-soft);}
+  .origin-toggle button:hover{border-color:var(--polar);color:var(--polar);background:var(--polar-soft);}
   .origin-toggle button:focus-visible{outline:3px solid var(--polar);outline-offset:2px}
+  .origin-toggle .hint{font:600 .78rem "Source Code Pro",monospace;color:var(--muted);}
+
+  .explore-controls{background:var(--paper);border:1px solid var(--line);border-radius:2px;padding:1rem 1.1rem;margin-bottom:1.1rem;}
+  .explore-controls h2{margin:0 0 .8rem;font-size:.98rem;font-weight:700;color:var(--navy);}
+  .explore-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.1rem;}
+  .explore-field{display:flex;flex-direction:column;gap:.4rem;}
+  .explore-field label{font-size:.86rem;font-weight:700;color:var(--ink);display:flex;justify-content:space-between;gap:.5rem;}
+  .explore-val{font:700 .82rem "Source Code Pro",monospace;color:var(--polar);}
 
   .stage-frame{border:1px solid #173e68;border-radius:2px;overflow:hidden;box-shadow:0 4px 12px rgba(0,40,85,.08);margin-bottom:1.1rem;background:var(--paper);padding:.9rem;}
-  canvas#cv{width:100%;height:auto;display:block;border-radius:2px;background:var(--bg-canvas);aspect-ratio:800/540;}
+  canvas#cv{width:100%;height:auto;display:block;border-radius:2px;background:var(--bg-canvas);aspect-ratio:800/540;touch-action:none;}
 
   .controls{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;margin-top:.8rem;}
   .playbtn{width:40px;height:40px;border-radius:50%;border:1.5px solid #9db1c8;background:#fff;color:var(--ink);cursor:pointer;flex:none;display:flex;align-items:center;justify-content:center;}
@@ -71,6 +79,14 @@
   .rows dd small{color:var(--muted);font-weight:400;font-size:.7rem}
   .check{grid-column:1/-1;margin-top:.7rem;padding:.55rem .7rem;border-radius:2px;background:var(--nt-soft);font:600 .76rem "Source Code Pro",monospace;color:var(--nt);line-height:1.5;}
   .check b{color:var(--ok)}
+  .badge{margin-top:.5rem;padding:.55rem .7rem;border-radius:2px;font:700 .8rem "Source Code Pro",monospace;line-height:1.5;}
+  .badge.ok{background:var(--nt-soft);color:var(--ok);}
+  .badge.bad{background:var(--bad-soft);color:var(--bad);}
+  .badge.transition{background:var(--polar-soft);color:var(--polar);font-weight:600;}
+  .eqn-label{margin:.9rem 0 .2rem;font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);}
+  .eqn-label:first-child{margin-top:0}
+  .eqn-sym{margin:.15rem 0;}
+  .eqn-sub{margin:.1rem 0 .5rem;color:var(--muted);font:600 .85rem "Source Code Pro",monospace;}
 
   .note{margin-top:0;padding:1rem 0 1.1rem;border-top:2px solid var(--navy);border-bottom:1px solid var(--line);font-size:1rem;line-height:1.65;}
   .note h2{margin:0 0 .45rem;font-size:1.05rem;letter-spacing:.08em;text-transform:uppercase;color:var(--navy);}
@@ -120,15 +136,34 @@
     <p id="submitStatus" class="submit-status" role="status" aria-live="polite"></p>
   </div>
 
-  <p class="lede">A car takes an S-curve on-ramp at a constant 15&nbsp;m/s &mdash; one bend, then a tighter one curving the other way (idealized as two circular arcs sharing a common tangent). The car has exactly <b>one</b> real velocity and <b>one</b> real acceleration. n-t and polar are just two different bases for writing those same two vectors: <span class="math">v = v_t e_t = r&#775;e_r + r&theta;&#775;e_&theta;</span> and <span class="math">a = a_t e_t + a_n e_n = a_r e_r + a_&theta;e_&theta;</span>. The components look different because the axes are different &mdash; not because the motion changed.</p>
+  <p class="lede">A car takes an S-curve on-ramp &mdash; one bend, then a tighter one curving the other way (idealized as two circular arcs sharing a common tangent). The car has exactly <b>one</b> real velocity and <b>one</b> real acceleration. n-t and polar are just two different bases for writing those same two vectors: <span class="math">v = v_t e_t = r&#775;e_r + r&theta;&#775;e_&theta;</span> and <span class="math">a = a_t e_t + a_n e_n = a_r e_r + a_&theta;e_&theta;</span>. The components look different because the axes are different &mdash; not because the motion changed. Use the controls below to change the speed, the two bend radii, or drag the polar origin O, and watch which quantities move and which stay fixed.</p>
 
-  <div class="origin-toggle" role="group" aria-label="Choose where the polar origin sits">
-    <button id="btn-center" type="button" aria-pressed="true">Origin at C&#8321; (first bend)</button>
-    <button id="btn-offset" type="button" aria-pressed="false">Origin at a roadside marker</button>
+  <div class="origin-toggle" role="group" aria-label="Move the polar origin O">
+    <button id="btn-reset-o" type="button">Reset O</button>
+    <button id="btn-center" type="button">Place O at C&#8321;</button>
+    <span class="hint">Or click and drag the orange point O directly on the canvas.</span>
   </div>
 
+  <section class="explore-controls" aria-labelledby="explore-heading">
+    <h2 id="explore-heading">Explore Controls</h2>
+    <div class="explore-grid">
+      <div class="explore-field">
+        <label for="speedSlider">Speed v <span class="explore-val" id="speedVal">15.0 m/s</span></label>
+        <input id="speedSlider" type="range" min="5" max="30" step="0.5" value="15" aria-describedby="speedVal">
+      </div>
+      <div class="explore-field">
+        <label for="rho1Slider">Radius &rho;&#8321; (first bend) <span class="explore-val" id="rho1Val">40 m</span></label>
+        <input id="rho1Slider" type="range" min="20" max="50" step="1" value="40" aria-describedby="rho1Val">
+      </div>
+      <div class="explore-field">
+        <label for="rho2Slider">Radius &rho;&#8322; (second bend) <span class="explore-val" id="rho2Val">28 m</span></label>
+        <input id="rho2Slider" type="range" min="15" max="50" step="1" value="28" aria-describedby="rho2Val">
+      </div>
+    </div>
+  </section>
+
   <div class="stage-frame">
-    <canvas id="cv" width="800" height="540" role="img" aria-label="Animated car traveling along an S-curve road, with velocity and acceleration vectors shown"></canvas>
+    <canvas id="cv" width="800" height="540" role="img" aria-label="Animated car traveling along an S-curve road, with velocity and acceleration vectors shown. The orange dot O is a draggable polar origin."></canvas>
     <div class="controls">
       <button class="playbtn" id="playBtn" aria-label="Pause animation" aria-pressed="true"><span class="ico-pause"></span></button>
       <input id="scrub" type="range" min="0" max="1000" value="0" aria-label="Car position along the curve">
@@ -138,7 +173,7 @@
       <span><i class="swatch" style="background:var(--v-arrow)"></i> velocity v (true vector)</span>
       <span><i class="swatch" style="background:var(--a-arrow); opacity:.85"></i> acceleration a (true vector)</span>
       <span><i class="swatch" style="background:var(--nt)"></i> &rho;, e_n line (car &rarr; active bend center)</span>
-      <span><i class="swatch" style="background:var(--polar)"></i> r, e_r line (car &rarr; origin O)</span>
+      <span><i class="swatch" style="background:var(--polar)"></i> r, e_r line (car &rarr; origin O &mdash; drag it!)</span>
     </div>
   </div>
 
@@ -157,7 +192,7 @@
 
     <div class="card">
       <h2><span class="dot" style="background:var(--polar)"></span>Polar (e_r, e_&theta;)</h2>
-      <p class="cap" id="polarCap">Axes are anchored to a fixed point O; e_r always points outward from O to the car.</p>
+      <p class="cap" id="polarCap">Axes are anchored to O. &theta; is measured the standard engineering way: counterclockwise from +x, with +y up &mdash; not raw screen pixels.</p>
       <dl class="rows">
         <dt>r <small>(dist. to O)</small></dt><dd id="r">&mdash;</dd>
         <dt>&theta;</dt><dd id="theta">&mdash;</dd>
@@ -172,9 +207,42 @@
         <dt>v_&theta;</dt><dd id="vth">&mdash;</dd>
         <dt>a_r</dt><dd id="ar">&mdash;</dd>
         <dt>a_&theta;</dt><dd id="ath">&mdash;</dd>
-        <dd class="check">|v| check: &radic;(v_t&sup2;+v_n&sup2;) = &radic;(v_r&sup2;+v_&theta;&sup2;) = <b id="vcheck">&mdash;</b> m/s</dd>
       </dl>
+      <p class="check" id="junctionNote" style="display:none;background:var(--polar-soft);color:var(--polar)"></p>
       <p class="check" id="coincidentNote" style="display:none;background:var(--polar-soft);color:var(--polar)"></p>
+    </div>
+
+    <div class="card" style="grid-column:1/-1">
+      <h2 style="color:var(--navy)">Physical Invariant Check</h2>
+      <p class="cap">Two independent computations of the same vector's magnitude &mdash; never averaged. If the tool is correct, both routes always agree.</p>
+      <dl class="rows">
+        <dt>|v| from N&#8211;T = &radic;(v_t&sup2;+v_n&sup2;)</dt><dd id="vmagNT">&mdash;</dd>
+        <dt>|v| from Polar = &radic;(v_r&sup2;+v_&theta;&sup2;)</dt><dd id="vmagPolar">&mdash;</dd>
+        <dt>&Delta;v = ||v|_NT &minus; |v|_polar|</dt><dd id="vdiff">&mdash;</dd>
+      </dl>
+      <p class="badge" id="vCheckBadge"></p>
+      <dl class="rows" style="margin-top:.9rem">
+        <dt>|a| from N&#8211;T = &radic;(a_t&sup2;+a_n&sup2;)</dt><dd id="amagNT">&mdash;</dd>
+        <dt>|a| from Polar = &radic;(a_r&sup2;+a_&theta;&sup2;)</dt><dd id="amagPolar">&mdash;</dd>
+        <dt>&Delta;a = ||a|_NT &minus; |a|_polar|</dt><dd id="adiff">&mdash;</dd>
+      </dl>
+      <p class="badge" id="aCheckBadge"></p>
+      <p class="check" style="background:var(--nt-soft);color:var(--ink);margin-top:.9rem"><b>Changing coordinate systems does not change the motion.</b> v_NT = v_polar and a_NT = a_polar in magnitude, within numerical tolerance &mdash; the <em>components</em> differ only because the bases (e_t, e_n) vs. (e_r, e_&theta;) are different.</p>
+    </div>
+
+    <div class="card" style="grid-column:1/-1">
+      <h2 style="color:var(--navy)">Equations (live)</h2>
+      <p class="eqn-label">Normal&#8211;Tangential</p>
+      <p class="math eqn-sym">v = v e_t</p>
+      <p class="math eqn-sym">a = v&#775; e_t + (v&sup2;/&rho;) e_n &nbsp; (v&#775; = 0 &rArr; a_t = 0)</p>
+      <p class="eqn-sub" id="eqNTaSub">&mdash;</p>
+      <p class="eqn-label">Polar</p>
+      <p class="math eqn-sym">v = r&#775; e_r + r&theta;&#775; e_&theta;</p>
+      <p class="eqn-sub" id="eqPolarVSub">&mdash;</p>
+      <p class="math eqn-sym">a_r = r&#776; &minus; r&theta;&#775;&sup2;</p>
+      <p class="eqn-sub" id="eqPolarArSub">&mdash;</p>
+      <p class="math eqn-sym">a_&theta; = r&theta;&#776; + 2r&#775;&theta;&#775;</p>
+      <p class="eqn-sub" id="eqPolarAthSub">&mdash;</p>
     </div>
   </div>
 
@@ -185,9 +253,9 @@
 
   <section class="submission" aria-labelledby="record-heading">
     <h2 id="record-heading">Engineering Record</h2>
-    <p>Explain, in your own words, why n-t's a_n changed value partway through the curve while polar's origin never moved.</p>
+    <p>Explain, in your own words, why n-t's a_n changes value partway through the curve, and why dragging the polar origin O changes r, &theta;, and every polar component &mdash; yet never changes the physical velocity or acceleration vectors themselves.</p>
     <label for="studentNotes">Interpretation</label>
-    <textarea id="studentNotes" placeholder="Describe what happens to rho, C, r, and O as the car crosses from the first bend into the second."></textarea>
+    <textarea id="studentNotes" placeholder="Describe what happens to rho, C, r, and O as the car crosses from the first bend into the second, and as you drag O."></textarea>
     <div class="submission-actions">
       <button id="submitWork" type="button">Submit My Work</button>
       <button id="downloadSolution" class="download" type="button">Download Solution Image</button>
@@ -226,27 +294,39 @@
   var tanDir = {x:Math.cos(TANGENT_DEG*Math.PI/180), y:Math.sin(TANGENT_DEG*Math.PI/180)};
   var nrmDir = rot90(tanDir);
 
-  var R1 = 150, R2 = 105;
-  var C1 = vecAdd(J, vecScale(nrmDir, R1));
-  var C2 = vecSub(J, vecScale(nrmDir, R2));
-
-  var M_PER_PX = 40 / R1;
+  // Fixed meters-per-pixel scale, independent of the radius sliders, so
+  // dragging rho1/rho2 changes the ON-SCREEN arc size proportionally to the
+  // real physical radius instead of redefining the scale itself.
+  var M_PER_PX = 40 / 150;
   var V0 = 15;
+  var RHO1_M = 40, RHO2_M = 28;
 
   var angle1_J = Math.atan2(-nrmDir.y, -nrmDir.x);
   var angle2_J = Math.atan2( nrmDir.y,  nrmDir.x);
   var SWEEP_A = 122 * Math.PI/180, SWEEP_B = 122 * Math.PI/180;
 
-  // Arc length (s = R * sweep) differs between the two bends since R1 != R2.
-  // At truly constant speed, time on each bend must be proportional to ITS
-  // arc length, not split 50/50 -- otherwise the animated car silently speeds
-  // up or slows down at the joint even though v is set to a constant 15 m/s.
-  var ARC1_PX = R1 * SWEEP_A, ARC2_PX = R2 * SWEEP_B;
-  var SPLIT = ARC1_PX / (ARC1_PX + ARC2_PX);
+  var R1, R2, C1, C2, ARC1_PX, ARC2_PX, SPLIT, REAL_TRAVEL_S, DURATION;
+  var SPEEDUP = 2;
 
-  var O_C1 = {x:C1.x, y:C1.y};
-  var O_MARKER = {x:150, y:460};
-  var originMode = 'c1';
+  function recomputeGeometry(){
+    R1 = RHO1_M / M_PER_PX;
+    R2 = RHO2_M / M_PER_PX;
+    // J and the tangent direction never move, so the common tangent between
+    // the two arcs stays geometrically correct at every radius.
+    C1 = vecAdd(J, vecScale(nrmDir, R1));
+    C2 = vecSub(J, vecScale(nrmDir, R2));
+    ARC1_PX = R1 * SWEEP_A; ARC2_PX = R2 * SWEEP_B;
+    SPLIT = ARC1_PX / (ARC1_PX + ARC2_PX);
+    recomputeTiming();
+  }
+  function recomputeTiming(){
+    // Total real-world travel time at the current constant speed, sped up
+    // 2x for viewing. Time on each bend stays proportional to ITS arc
+    // length, so the animated car never silently speeds up at the joint.
+    REAL_TRAVEL_S = (ARC1_PX + ARC2_PX) * M_PER_PX / V0;
+    DURATION = REAL_TRAVEL_S / SPEEDUP;
+  }
+  recomputeGeometry();
 
   function segmentAt(t){
     if(t <= SPLIT){
@@ -262,24 +342,9 @@
     return {x: seg.C.x + seg.R*Math.cos(seg.a), y: seg.C.y + seg.R*Math.sin(seg.a)};
   }
 
-  function polarStateAt(tt, O){
-    var pp = pathPoint(Math.min(1, Math.max(0, tt)));
-    var toC = vecSub(pp, O);
-    return { r: vecLen(toC) * M_PER_PX, theta: Math.atan2(toC.y, toC.x) };
-  }
-  function unwrapNear(a, ref){
-    while(a - ref > Math.PI) a -= 2*Math.PI;
-    while(a - ref < -Math.PI) a += 2*Math.PI;
-    return a;
-  }
-
   var t = 0, dir = 1;
   var playing = !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   var lastTs = null;
-  // Total real-world travel time at the constant 15 m/s, sped up 2x for viewing.
-  var REAL_TRAVEL_S = (ARC1_PX + ARC2_PX) * M_PER_PX / V0;
-  var SPEEDUP = 2;
-  var DURATION = REAL_TRAVEL_S / SPEEDUP;
 
   function step(ts){
     if(lastTs==null) lastTs = ts;
@@ -339,6 +404,51 @@
     ctx.restore();
   }
 
+  // ---- draggable polar origin O ----
+  var O_DEFAULT = {x:150, y:460};
+  var O = {x:O_DEFAULT.x, y:O_DEFAULT.y};
+  var draggingO = false;
+  var GRAB_R = 16;
+
+  function clientToVirtual(clientX, clientY){
+    var rect = canvas.getBoundingClientRect();
+    return { x: (clientX-rect.left)/rect.width*800, y: (clientY-rect.top)/rect.height*540 };
+  }
+  canvas.addEventListener('pointerdown', function(e){
+    var v = clientToVirtual(e.clientX, e.clientY);
+    if(vecLen(vecSub(v,O)) <= GRAB_R){
+      draggingO = true;
+      try{ canvas.setPointerCapture(e.pointerId); }catch(_){}
+      canvas.style.cursor = 'grabbing';
+    }
+  });
+  canvas.addEventListener('pointermove', function(e){
+    var v = clientToVirtual(e.clientX, e.clientY);
+    if(draggingO){
+      O.x = Math.min(780, Math.max(20, v.x));
+      O.y = Math.min(520, Math.max(20, v.y));
+    } else {
+      canvas.style.cursor = (vecLen(vecSub(v,O)) <= GRAB_R) ? 'grab' : 'default';
+    }
+  });
+  function endDrag(e){
+    if(draggingO){ draggingO = false; canvas.style.cursor = 'default'; try{ canvas.releasePointerCapture(e.pointerId); }catch(_){} }
+  }
+  canvas.addEventListener('pointerup', endDrag);
+  canvas.addEventListener('pointercancel', endDrag);
+  canvas.addEventListener('pointerleave', function(){ if(!draggingO) canvas.style.cursor = 'default'; });
+
+  document.getElementById('btn-reset-o').addEventListener('click', function(){ O.x = O_DEFAULT.x; O.y = O_DEFAULT.y; });
+  document.getElementById('btn-center').addEventListener('click', function(){ O.x = C1.x; O.y = C1.y; });
+
+  // A small window around the exact arc junction where curvature (and so
+  // r-double-dot / theta-double-dot / a_r / a_theta) jumps discontinuously
+  // by design (two idealized circular arcs, not a smoothed road). The
+  // values on either side are exact -- not numerically unstable -- but
+  // showing a single instantaneous reading right at a real discontinuity
+  // is misleading, so that narrow window is flagged instead of displayed.
+  var JUNCTION_T_EPS = 0.012;
+
   function render(){
     ctx.save();
     ctx.scale(canvas.width/800, canvas.height/540);
@@ -370,11 +480,26 @@
     if(vecLen(vecSub(pathPoint(tF),P)) < 1e-6){ eT = vecNorm(vecSub(P, pathPoint(t - dir*eps))); }
     var eN = vecNorm(vecSub(Cactive, P));
 
-    var O = originMode === 'c1' ? O_C1 : O_MARKER;
     var toCar = vecSub(P, O);
     var rPx = vecLen(toCar);
+
+    // ---- standard engineering coordinate convention for the POLAR frame ----
+    // Canvas y grows downward, but theta, theta-dot, theta-ddot, e_r, e_theta
+    // must obey +x right / +y UP / theta counterclockwise from +x. eR (the
+    // direction from O to the car) is chirality-neutral -- same vector either
+    // way -- so it draws unchanged. e_theta is NOT: rot90 in raw screen
+    // coordinates spins the opposite way a person actually sees "counter-
+    // clockwise" once y is flipped back for display, and theta itself would
+    // carry the wrong sign. So: build eR normally, rotate +90 deg CCW in a
+    // physics (y-up) frame to get the true e_theta, then flip that back to
+    // screen space only for drawing. All numeric quantities (theta, vr, vth,
+    // ar, ath, and everything derived from them) use the physics-frame
+    // vectors directly, never the raw screen-space ones.
     var eR = rPx > 1e-6 ? vecNorm(toCar) : {x:1,y:0};
-    var eTh = rot90(eR);
+    var eRphys = {x: eR.x, y: -eR.y};
+    var eThPhys = rot90(eRphys);
+    var eThDraw = {x: eThPhys.x, y: -eThPhys.y};
+    var thetaRad = Math.atan2(-toCar.y, toCar.x);
 
     var rhoM = Ractive * M_PER_PX;
     var A_N = (V0*V0) / rhoM;
@@ -399,16 +524,17 @@
     });
 
     ctx.save();
-    ctx.fillStyle = polar; ctx.beginPath(); ctx.arc(O.x,O.y,5,0,7); ctx.fill();
+    ctx.fillStyle = polar; ctx.beginPath(); ctx.arc(O.x,O.y,7,0,7); ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.6; ctx.stroke();
     ctx.fillStyle = ink; ctx.font = '700 13px "Source Sans 3",sans-serif';
-    ctx.fillText('O', O.x+9, O.y-8);
+    ctx.fillText('O (drag me)', O.x+11, O.y-9);
     ctx.restore();
 
     // small perpendicular axis ticks AT the car for each frame's own basis vectors
     drawTick(ctx, P, eT, 24, nt, 'e_t');
     drawTick(ctx, P, eN, 24, nt, 'e_n');
     drawTick(ctx, P, eR, 24, polar, 'e_r');
-    drawTick(ctx, P, eTh, 24, polar, 'e_θ');
+    drawTick(ctx, P, eThDraw, 24, polar, 'e_θ');
 
     var vVec = {x: eT.x*V0, y: eT.y*V0};
     var aVec = {x: eN.x*A_N, y: eN.y*A_N};
@@ -429,29 +555,22 @@
     ctx.restore();
 
     var rM = rPx * M_PER_PX;
-    var thetaDeg = Math.atan2(toCar.y, toCar.x) * 180/Math.PI;
+    var thetaDeg = thetaRad * 180/Math.PI;
 
-    // Polar velocity/acceleration built from r(t), theta(t) directly -- via
-    // numerical differentiation of the actual path, not vector projection --
-    // so the panel teaches the polar RECIPE (rdot, thetadot, ...) rather than
-    // just handing over final components.
-    var dTau = 0.02; // seconds, real time
-    var dtParam = dTau / REAL_TRAVEL_S;
-    var s0 = polarStateAt(t, O);
-    var sP = polarStateAt(t + dir*dtParam, O);
-    var sM = polarStateAt(t - dir*dtParam, O);
-    var thP = unwrapNear(sP.theta, s0.theta), thM = unwrapNear(sM.theta, s0.theta);
+    // Polar velocity/acceleration derived from the TRUE v/a vectors (already
+    // known exactly -- v = V0*e_t, a = A_N*e_n -- for this idealized path),
+    // not from finite-differencing the path. Projected through the y-up
+    // physics frame above so vth/ath (and hence theta-dot, theta-ddot) carry
+    // the correct standard-convention sign.
+    var vVecPhys = {x: vVec.x, y: -vVec.y}, aVecPhys = {x: aVec.x, y: -aVec.y};
+    var vr = dot(vVecPhys, eRphys), vth = dot(vVecPhys, eThPhys);
+    var ar = dot(aVecPhys, eRphys), ath = dot(aVecPhys, eThPhys);
+    var rDot = vr;
+    var thetaDot = rM > 1e-6 ? vth / rM : 0;
+    var rDotDot = ar + rM*thetaDot*thetaDot;
+    var thetaDotDot = rM > 1e-6 ? (ath - 2*rDot*thetaDot) / rM : 0;
 
-    var rDot = (sP.r - sM.r) / (2*dTau);
-    var rDotDot = (sP.r - 2*s0.r + sM.r) / (dTau*dTau);
-    var thetaDot = (thP - thM) / (2*dTau);
-    var thetaDotDot = (thP - 2*s0.theta + thM) / (dTau*dTau);
-
-    var vr = rDot;
-    var vth = s0.r * thetaDot;
-    var ar = rDotDot - s0.r*thetaDot*thetaDot;
-    var ath = s0.r*thetaDotDot + 2*rDot*thetaDot;
-    var magPolar = Math.sqrt(vr*vr + vth*vth);
+    var inTransition = Math.abs(t - SPLIT) < JUNCTION_T_EPS;
 
     document.getElementById('vt').textContent = fmt(V0,2) + ' m/s';
     document.getElementById('vn').textContent = '0.00 m/s';
@@ -463,51 +582,92 @@
     document.getElementById('theta').textContent = fmt(thetaDeg,1) + '°';
     document.getElementById('rdot').textContent = fmt(rDot,2) + ' m/s';
     document.getElementById('thetadot').textContent = fmt(thetaDot,3) + ' rad/s';
-    document.getElementById('rddot').textContent = fmt(rDotDot,2) + ' m/s²';
-    document.getElementById('thetaddot').textContent = fmt(thetaDotDot,3) + ' rad/s²';
     document.getElementById('vr').textContent = fmt(vr,2) + ' m/s';
     document.getElementById('vth').textContent = fmt(vth,2) + ' m/s';
-    document.getElementById('ar').textContent = fmt(ar,2) + ' m/s²';
-    document.getElementById('ath').textContent = fmt(ath,2) + ' m/s²';
-    document.getElementById('vcheck').textContent = fmt((V0+magPolar)/2, 2);
 
-    // e_r = -e_n whenever O coincides with the currently active center --
-    // surface that explicitly instead of leaving it implicit in the numbers.
+    var rddotEl = document.getElementById('rddot'), thddotEl = document.getElementById('thetaddot'),
+        arEl = document.getElementById('ar'), athEl = document.getElementById('ath');
+    var junctionNote = document.getElementById('junctionNote');
+    if(inTransition){
+      rddotEl.textContent = '—'; thddotEl.textContent = '—'; arEl.textContent = '—'; athEl.textContent = '—';
+      junctionNote.style.display = 'block';
+      junctionNote.textContent = 'Transition between idealized circular arcs — second-derivative values are not evaluated at the curvature discontinuity.';
+    } else {
+      rddotEl.textContent = fmt(rDotDot,2) + ' m/s²';
+      thddotEl.textContent = fmt(thetaDotDot,3) + ' rad/s²';
+      arEl.textContent = fmt(ar,2) + ' m/s²';
+      athEl.textContent = fmt(ath,2) + ' m/s²';
+      junctionNote.style.display = 'none';
+    }
+
+    // ---- physical invariant check: two independent routes, never averaged ----
+    var magV_NT = V0; // v_n is always 0 for this path
+    var magV_Polar = Math.sqrt(vr*vr + vth*vth);
+    var vDiff = Math.abs(magV_NT - magV_Polar);
+    document.getElementById('vmagNT').textContent = fmt(magV_NT,2) + ' m/s';
+    document.getElementById('vmagPolar').textContent = fmt(magV_Polar,2) + ' m/s';
+    document.getElementById('vdiff').textContent = fmt(vDiff,4) + ' m/s';
+    var vBadge = document.getElementById('vCheckBadge');
+    if(vDiff < 0.02){ vBadge.className = 'badge ok'; vBadge.innerHTML = '✓ Same physical velocity'; }
+    else { vBadge.className = 'badge bad'; vBadge.innerHTML = '⚠ Mismatch — check inputs'; }
+
+    var magA_NT = A_N; // a_t is always 0 for this path
+    var aBadge = document.getElementById('aCheckBadge');
+    if(inTransition){
+      document.getElementById('amagNT').textContent = fmt(magA_NT,2) + ' m/s²';
+      document.getElementById('amagPolar').textContent = '—';
+      document.getElementById('adiff').textContent = '—';
+      aBadge.className = 'badge transition';
+      aBadge.textContent = 'Transition zone — polar acceleration components are not evaluated at the curvature discontinuity.';
+    } else {
+      var magA_Polar = Math.sqrt(ar*ar + ath*ath);
+      var aDiff = Math.abs(magA_NT - magA_Polar);
+      document.getElementById('amagNT').textContent = fmt(magA_NT,2) + ' m/s²';
+      document.getElementById('amagPolar').textContent = fmt(magA_Polar,2) + ' m/s²';
+      document.getElementById('adiff').textContent = fmt(aDiff,4) + ' m/s²';
+      if(aDiff < 0.05){ aBadge.className = 'badge ok'; aBadge.innerHTML = '✓ Same physical acceleration'; }
+      else { aBadge.className = 'badge bad'; aBadge.innerHTML = '⚠ Mismatch — check inputs'; }
+    }
+
+    // ---- live equation panel ----
+    document.getElementById('eqNTaSub').textContent = 'a_n = v²/ρ = ' + fmt(V0,2) + '²/' + fmt(rhoM,2) + ' = ' + fmt(A_N,2) + ' m/s²';
+    document.getElementById('eqPolarVSub').textContent =
+      'v_r = ṙ = ' + fmt(rDot,2) + ' m/s,   v_θ = rθ̇ = ' + fmt(rM,2) + '(' + fmt(thetaDot,3) + ') = ' + fmt(vth,2) + ' m/s';
+    var arSubEl = document.getElementById('eqPolarArSub'), athSubEl = document.getElementById('eqPolarAthSub');
+    if(inTransition){
+      arSubEl.textContent = 'Not evaluated at the curvature discontinuity (see note above).';
+      athSubEl.textContent = 'Not evaluated at the curvature discontinuity (see note above).';
+    } else {
+      arSubEl.textContent = 'a_r = r̈ − rθ̇² = ' + fmt(rDotDot,2) + ' − ' + fmt(rM,2) + '(' + fmt(thetaDot,3) + ')² = ' + fmt(ar,2) + ' m/s²';
+      athSubEl.textContent = 'a_θ = rθ̈ + 2ṙθ̇ = ' + fmt(rM,2) + '(' + fmt(thetaDotDot,4) + ') + 2(' + fmt(rDot,2) + ')(' + fmt(thetaDot,3) + ') = ' + fmt(ath,2) + ' m/s²';
+    }
+
+    // e_r = -e_n whenever O coincides with the CURRENTLY ACTIVE center of
+    // curvature -- generalized so it fires for either bend, wherever O is
+    // dragged (not tied to a fixed preset).
     var coincident = document.getElementById('coincidentNote');
-    if(originMode === 'c1' && seg.C === C1){
+    if(vecLen(vecSub(O, Cactive)) < 6){
       coincident.style.display = 'block';
-      coincident.innerHTML = 'Right now O = C₁ (active center), so r = &rho; = ' + fmt(rhoM,1) + ' m &mdash; but <b>e_r = −e_n</b> (opposite directions), so a_r = −' + fmt(A_N,2) + ' m/s² while a_n = +' + fmt(A_N,2) + ' m/s². Same physical vector, opposite sign convention.';
+      coincident.innerHTML = 'O is at the active center of curvature: r = ρ = ' + fmt(rhoM,1) + ' m &mdash; but <b>e_r = −e_n</b> (opposite directions). For this constant-speed circular motion, a_n = +v²/ρ = ' + fmt(A_N,2) + ' m/s² while a_r = −v²/r = ' + fmt(-A_N,2) + ' m/s². Same physical acceleration, opposite sign convention &mdash; e_r and e_n do NOT point the same way.';
     } else {
       coincident.style.display = 'none';
     }
 
-    lastVals = {vt:V0, vn:0, at:0, an:A_N, rho:rhoM, r:rM, theta:thetaDeg, rdot:rDot, thetadot:thetaDot, rddot:rDotDot, thetaddot:thetaDotDot, vr:vr, vth:vth, ar:ar, ath:ath};
+    lastVals = {vt:V0, vn:0, at:0, an:A_N, rho:rhoM, r:rM, theta:thetaDeg, rdot:rDot, thetadot:thetaDot,
+                rddot: inTransition?null:rDotDot, thetaddot: inTransition?null:thetaDotDot,
+                vr:vr, vth:vth, ar: inTransition?null:ar, ath: inTransition?null:ath,
+                magV_NT:magV_NT, magV_Polar:magV_Polar, magA_NT:magA_NT};
+  }
+
+  function originDescription(){
+    if(vecLen(vecSub(O, C1)) < 6) return 'O at C1 (first bend center)';
+    if(vecLen(vecSub(O, C2)) < 6) return 'O at C2 (second bend center)';
+    return 'O at custom position (' + Math.round(O.x) + ',' + Math.round(O.y) + ')';
   }
 
   function updateInsight(){
-    var cap = document.getElementById('polarCap');
-    var insight = document.getElementById('insight');
-    if(originMode === 'c1'){
-      cap.textContent = 'O is fixed at C₁ — the first bend\'s center. It stays there even after the road (and n-t\'s own center) moves on to the second bend.';
-      insight.innerHTML = 'The road is idealized as two circular arcs joined with a common tangent, so n-t\'s reference point <strong>jumps from C₁ to C₂</strong> the instant the car crosses into the second bend — &rho; changes with it, because curvature is a local property of the road itself. <span class="nt-word">O never moves</span> — that\'s the definition of a fixed origin. On the first bend, O happens to sit exactly at C₁: r equals &rho; there, but e_r points the opposite way from e_n (see the note under the polar table). Cross into the second bend and even that numeric coincidence breaks, even though O never moved at all. Either way, v and a are the same two vectors throughout — only their components change.';
-    } else {
-      cap.textContent = 'O is a fixed roadside marker, away from either bend.';
-      insight.innerHTML = 'The road is idealized as two circular arcs joined with a common tangent, so &rho; still jumps from C₁ to C₂ mid-curve — that belongs to the road, independent of where you put O. With O off at a marker, r (orange) and &rho; (' + '<span class="nt-word">teal</span>' + ') are visibly different distances throughout. <span class="nt-word">n-t\'s axes are a local property of the road</span>; polar\'s axes are anchored to whatever fixed point you chose. v and a are still the same two vectors — the components differ only because the basis is different.';
-    }
+    document.getElementById('insight').innerHTML = 'The road is idealized as two circular arcs joined with a common tangent, so n-t\'s reference point <strong>jumps from C₁ to C₂</strong> the instant the car crosses into the second bend &mdash; &rho; changes with it, because curvature is a local property of the road itself. Drag O anywhere and r and &theta; (and every polar component) change with it &mdash; but the black velocity arrow and the purple acceleration arrow never move, because <span class="nt-word">O only changes the description, not the motion</span>. n-t\'s axes are a local property of the road; polar\'s axes are anchored to wherever you put O. v and a are the same two vectors throughout &mdash; only their components change.';
   }
-
-  document.getElementById('btn-center').addEventListener('click', function(){
-    originMode = 'c1';
-    this.setAttribute('aria-pressed','true');
-    document.getElementById('btn-offset').setAttribute('aria-pressed','false');
-    updateInsight();
-  });
-  document.getElementById('btn-offset').addEventListener('click', function(){
-    originMode = 'marker';
-    this.setAttribute('aria-pressed','true');
-    document.getElementById('btn-center').setAttribute('aria-pressed','false');
-    updateInsight();
-  });
 
   var playBtn = document.getElementById('playBtn');
   function setPlayIcon(){
@@ -532,6 +692,25 @@
 
   if(!playing){ playBtn.innerHTML = '<span class="ico-play"></span>'; playBtn.setAttribute('aria-pressed','false'); playBtn.setAttribute('aria-label','Play animation'); }
 
+  var speedSlider = document.getElementById('speedSlider');
+  speedSlider.addEventListener('input', function(){
+    V0 = Number(speedSlider.value);
+    document.getElementById('speedVal').textContent = fmt(V0,1) + ' m/s';
+    recomputeTiming();
+  });
+  var rho1Slider = document.getElementById('rho1Slider');
+  rho1Slider.addEventListener('input', function(){
+    RHO1_M = Number(rho1Slider.value);
+    document.getElementById('rho1Val').textContent = fmt(RHO1_M,0) + ' m';
+    recomputeGeometry();
+  });
+  var rho2Slider = document.getElementById('rho2Slider');
+  rho2Slider.addEventListener('input', function(){
+    RHO2_M = Number(rho2Slider.value);
+    document.getElementById('rho2Val').textContent = fmt(RHO2_M,0) + ' m';
+    recomputeGeometry();
+  });
+
   updateInsight();
   fitCanvas();
   requestAnimationFrame(step);
@@ -554,7 +733,7 @@
       studentName: document.getElementById("studentName").value.trim(),
       email: document.getElementById("studentEmail").value.trim(),
       activity: "N-T vs. Polar — Activity 06",
-      scenario: "Origin: " + (originMode === 'c1' ? 'C1 (first bend)' : 'roadside marker') + ", t=" + Math.round(t*100) + "%",
+      scenario: "v=" + fmt(V0,1) + "m/s, ρ1=" + fmt(RHO1_M,0) + "m, ρ2=" + fmt(RHO2_M,0) + "m, " + originDescription() + ", t=" + Math.round(t*100) + "%",
       displacement: v.r!=null ? String(v.r.toFixed(2)) : '',
       distance: v.rho!=null ? String(v.rho.toFixed(2)) : '',
       notes: document.getElementById("studentNotes").value.trim()
@@ -620,8 +799,8 @@
       octx.fillStyle = "#002855"; octx.font = "700 25px 'Source Sans 3',Arial"; octx.fillText("Final Readout", 60, READOUT_Y);
       octx.fillStyle = "#10243e"; octx.font = "18px 'Source Sans 3',Arial";
       var v = lastVals || {};
-      octx.fillText("a_n = " + (v.an!=null?v.an.toFixed(2):'--') + " m/s²   ρ = " + (v.rho!=null?v.rho.toFixed(1):'--') + " m", 60, DATA_Y);
-      octx.fillText("r = " + (v.r!=null?v.r.toFixed(2):'--') + " m   a_r = " + (v.ar!=null?v.ar.toFixed(2):'--') + " m/s²", 700, DATA_Y);
+      octx.fillText("v = " + fmt(V0,1) + " m/s   a_n = " + (v.an!=null?v.an.toFixed(2):'--') + " m/s²   ρ = " + (v.rho!=null?v.rho.toFixed(1):'--') + " m", 60, DATA_Y);
+      octx.fillText("r = " + (v.r!=null?v.r.toFixed(2):'--') + " m   a_r = " + (v.ar!=null?v.ar.toFixed(2):'--') + " m/s²   " + originDescription(), 700, DATA_Y);
 
       octx.fillStyle = "#334b64"; octx.font = "17px 'Source Sans 3',Arial";
       wrapText(octx, document.getElementById("studentNotes").value.trim(), 60, NOTES_Y, 1480, 24, 2);
