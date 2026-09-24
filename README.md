@@ -15,6 +15,7 @@ Visit **[Dynamics in Motion](https://nuhaaljuneidi.github.io/dynamics-in-motion/
 | [03 - Motion Vector Lab](https://nuhaaljuneidi.github.io/dynamics-in-motion/motion-vector-lab.html) | Vector kinematics | Explore position, velocity, and acceleration vectors through interactive motion. |
 | [04 - Kinematics Relationship Lab](https://nuhaaljuneidi.github.io/dynamics-in-motion/velocity-axis-lab.html) | Choosing derivatives and integrals | Decide which relationship applies when motion is given as a function of time or position. |
 | [05 - Example 10: Vertical Motion](https://nuhaaljuneidi.github.io/dynamics-in-motion/example-10-projectile.html) | Constant-acceleration projectile motion | Generate numerical examples by changing release height and flight time, then solve for launch velocity and maximum height. |
+| [06 - N-T vs. Polar Coordinates](https://nuhaaljuneidi.github.io/dynamics-in-motion/nt-vs-polar-lab.html) | Curvilinear motion coordinates | Compare normal-tangential and polar descriptions and identify the components appropriate to the path geometry. |
 
 ## Learning design
 
@@ -46,6 +47,7 @@ motion-graph-translator.html  Activity 02
 motion-vector-lab.html        Activity 03
 velocity-axis-lab.html        Activity 04
 example-10-projectile.html    Activity 05
+nt-vs-polar-lab.html          Activity 06
 ```
 
 ## Contributing
