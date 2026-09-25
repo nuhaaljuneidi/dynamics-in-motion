@@ -10,12 +10,15 @@
   :root{--ink:#10243e;--navy:#002855;--blue:#005eb8;--gold:#ffcc00;--paper:#fff;--line:#d9e3ef;--muted:#5f7084;
         --nt:#1e8e82;--nt-soft:#dcf3f0;--polar:#c24e18;--polar-soft:#fbe6da;--ok:#1f7a4d;--bad:#b3261e;--bad-soft:#fbe4e2;--road:#3a4048;--lane:#ffcc00;
         --v-arrow:#10243e;--a-arrow:#6a4fa0;--car:#005eb8;--bg-canvas:#eef1f5;}
-  *{box-sizing:border-box}html,body{margin:0;padding:0;}
+  *{box-sizing:border-box}html,body{margin:0;padding:0;scroll-behavior:smooth;}
   body{font-family:"Source Sans 3",system-ui,sans-serif;color:var(--ink);background:#f4f7fb;min-height:100vh;padding:clamp(1rem,3.5vw,2.5rem);display:flex;flex-direction:column;align-items:center;}
   .wrap{width:100%;max-width:1120px;}
 
-  .activity-nav{display:flex;gap:.55rem;flex-wrap:wrap;margin:0 0 .8rem;}
-  .activity-nav a{font-weight:700;font-size:.9rem;text-decoration:none;color:var(--navy);background:var(--paper);border:1px solid #9db1c8;border-radius:2px;padding:.45rem .8rem;}
+  .skip-link{position:fixed;left:1rem;top:1rem;z-index:10;transform:translateY(-180%);background:var(--gold);color:var(--navy);font-weight:800;padding:.65rem .9rem;text-decoration:none;}
+  .skip-link:focus{transform:translateY(0);}
+
+  .activity-nav{display:flex;gap:.55rem;flex-wrap:nowrap;overflow-x:auto;margin:0 0 .8rem;padding:.1rem 0 .45rem;scroll-snap-type:x proximity;scrollbar-width:thin;}
+  .activity-nav a{flex:0 0 auto;scroll-snap-align:start;font-weight:700;font-size:.9rem;text-decoration:none;color:var(--navy);background:var(--paper);border:1px solid #9db1c8;border-radius:2px;padding:.55rem .8rem;min-height:44px;display:inline-flex;align-items:center;}
   .activity-nav a[aria-current="page"]{background:var(--navy);border-color:var(--navy);color:#fff;}
 
   .course-banner{background:var(--navy);color:#fff;border-top:6px solid var(--gold);padding:clamp(1.25rem,2.5vw,1.75rem);margin-bottom:1.45rem;}
@@ -34,7 +37,15 @@
   .student-row button:hover{background:#004f9e}
   .student-row button:focus-visible{outline:4px dashed var(--blue);outline-offset:3px}
 
-  .lede{font-size:1.05rem;max-width:76ch;margin:0 0 1.1rem;line-height:1.6;color:#3e5269;}
+  button{min-height:44px;transition:background-color .2s ease,border-color .2s ease,color .2s ease,transform .2s ease;}
+  button:active{transform:translateY(1px);}
+  button:focus-visible,input:focus-visible,textarea:focus-visible,a:focus-visible{outline:3px solid var(--blue);outline-offset:3px;}
+  .learning-brief{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(260px,.65fr);gap:1.1rem;align-items:start;margin:0 0 1.15rem;padding:1.15rem 1.2rem;background:#eaf1f8;border-top:3px solid var(--blue);}
+  .brief-kicker{margin:0 0 .3rem;font:700 .75rem "Source Code Pro",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);}
+  .learning-brief h2{margin:0 0 .45rem;font-size:clamp(1.2rem,2.2vw,1.55rem);line-height:1.2;color:var(--navy);text-wrap:balance;}
+  .lede{font-size:1rem;max-width:68ch;margin:0;line-height:1.6;color:#3e5269;}
+  .watch-list{margin:0;padding:.2rem 0 0 1.2rem;color:#31485f;}
+  .watch-list li{margin:.25rem 0;line-height:1.4;}
   .math{font:600 .96rem "Source Code Pro",monospace;color:var(--navy)}
 
   .origin-toggle{display:flex;align-items:center;gap:.55rem;flex-wrap:wrap;margin:0 0 1.1rem;}
@@ -49,6 +60,11 @@
   .explore-field{display:flex;flex-direction:column;gap:.4rem;}
   .explore-field label{font-size:.86rem;font-weight:700;color:var(--ink);display:flex;justify-content:space-between;gap:.5rem;}
   .explore-val{font:700 .82rem "Source Code Pro",monospace;color:var(--polar);}
+  .experiment-toolbar{display:flex;gap:.55rem;flex-wrap:wrap;margin-top:1rem;padding-top:.85rem;border-top:1px solid var(--line);}
+  .experiment-toolbar button{font:700 .84rem "Source Sans 3",sans-serif;padding:.55rem .85rem;border:1px solid #9db1c8;background:#fff;color:var(--navy);cursor:pointer;}
+  .experiment-toolbar button:hover{border-color:var(--blue);background:#edf5fc;}
+  .experiment-toolbar .reset{margin-left:auto;border-color:var(--navy);background:var(--navy);color:#fff;}
+  .experiment-toolbar .reset:hover{background:#001e40;}
 
   .stage-frame{border:1px solid #173e68;border-radius:2px;overflow:hidden;box-shadow:0 4px 12px rgba(0,40,85,.08);margin-bottom:1.1rem;background:var(--paper);padding:.9rem;}
   canvas#cv{width:100%;height:auto;display:block;border-radius:2px;background:var(--bg-canvas);aspect-ratio:800/540;touch-action:none;}
@@ -62,6 +78,10 @@
   .playbtn .ico-play{width:0;height:0;border-style:solid;border-width:6px 0 6px 10px;border-color:transparent transparent transparent var(--ink);margin-left:2px;}
   input[type="range"]{flex:1;min-width:120px;accent-color:var(--polar)}
   .scrub-label{font:600 .78rem "Source Code Pro",monospace;color:var(--muted);white-space:nowrap}
+  .state-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;margin-top:.8rem;background:var(--line);border:1px solid var(--line);}
+  .state-item{background:#f8fafc;padding:.65rem .75rem;min-width:0;}
+  .state-item span{display:block;font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);}
+  .state-item output{display:block;margin-top:.12rem;font:700 .84rem "Source Code Pro",monospace;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
   .legend{display:flex;gap:1.1rem;flex-wrap:wrap;font-size:.82rem;color:var(--muted);margin-top:.7rem;}
   .legend span{display:inline-flex;align-items:center;gap:.4rem}
@@ -108,10 +128,13 @@
   .final-status{min-height:1.3em;margin:.65rem 0 0!important;font-weight:700;color:var(--navy)!important;}
 
   footer{margin-top:1.8rem;padding-top:1rem;border-top:1px solid var(--line);font-family:"Source Code Pro",monospace;font-size:.78rem;color:var(--muted);}
-  @media(max-width:600px){.student-row{align-items:flex-start;flex-direction:column;}.student-row input{width:100%;}}
+  @media(max-width:760px){.learning-brief{grid-template-columns:1fr}.state-strip{grid-template-columns:1fr}.experiment-toolbar .reset{margin-left:0}}
+  @media(max-width:600px){body{padding:.75rem}.student-row{align-items:flex-start;flex-direction:column;}.student-field,.student-row input,.student-row button{width:100%;}.course-banner{padding:1.1rem}.stage-frame{padding:.55rem}.legend{gap:.55rem 1rem}.rows{font-size:.8rem}.experiment-toolbar button{flex:1 1 calc(50% - .55rem)}}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important}}
 </style>
 </head>
 <body>
+<a class="skip-link" href="#simulation">Skip to simulation</a>
 <div class="wrap">
   <nav class="activity-nav" aria-label="Dynamics activities">
     <a href="index.html">Activity 01: Distance &amp; Displacement</a>
@@ -136,11 +159,26 @@
     <p id="submitStatus" class="submit-status" role="status" aria-live="polite"></p>
   </div>
 
-  <p class="lede">A car takes an S-curve on-ramp &mdash; one bend, then a tighter one curving the other way (idealized as two circular arcs sharing a common tangent). The car has exactly <b>one</b> real velocity and <b>one</b> real acceleration. n-t and polar are just two different bases for writing those same two vectors: <span class="math">v = v_t e_t = r&#775;e_r + r&theta;&#775;e_&theta;</span> and <span class="math">a = a_t e_t + a_n e_n = a_r e_r + a_&theta;e_&theta;</span>. The components look different because the axes are different &mdash; not because the motion changed. Use the controls below to change the speed, the two bend radii, or drag the polar origin O, and watch which quantities move and which stay fixed.</p>
+  <section class="learning-brief" aria-labelledby="learning-goal">
+    <div>
+      <p class="brief-kicker">Learning goal</p>
+      <h2 id="learning-goal">One motion, two coordinate descriptions</h2>
+      <p class="lede">The car has one physical velocity and one physical acceleration. Normal&ndash;tangential and polar coordinates describe those same vectors using different moving bases. Change the experiment and identify what is physical, what is geometric, and what depends only on the chosen origin.</p>
+    </div>
+    <div>
+      <p class="brief-kicker">Watch for</p>
+      <ol class="watch-list">
+        <li>The acceleration change when the active bend radius changes.</li>
+        <li>The polar components change when you move origin O.</li>
+        <li>The physical vector magnitudes remain equal in both bases.</li>
+      </ol>
+    </div>
+  </section>
 
   <div class="origin-toggle" role="group" aria-label="Move the polar origin O">
     <button id="btn-reset-o" type="button">Reset O</button>
     <button id="btn-center" type="button">Place O at C&#8321;</button>
+    <button id="btn-center2" type="button">Place O at C&#8322;</button>
     <span class="hint">Or click and drag the orange point O directly on the canvas.</span>
   </div>
 
@@ -160,14 +198,25 @@
         <input id="rho2Slider" type="range" min="15" max="50" step="1" value="28" aria-describedby="rho2Val">
       </div>
     </div>
+    <div class="experiment-toolbar" aria-label="Experiment shortcuts">
+      <button id="pos-first" type="button">Inspect first bend</button>
+      <button id="pos-junction" type="button">Inspect near junction</button>
+      <button id="pos-second" type="button">Inspect second bend</button>
+      <button id="resetExperiment" class="reset" type="button">Reset experiment</button>
+    </div>
   </section>
 
-  <div class="stage-frame">
+  <div class="stage-frame" id="simulation" tabindex="-1">
     <canvas id="cv" width="800" height="540" role="img" aria-label="Animated car traveling along an S-curve road, with velocity and acceleration vectors shown. The orange dot O is a draggable polar origin."></canvas>
     <div class="controls">
       <button class="playbtn" id="playBtn" aria-label="Pause animation" aria-pressed="true"><span class="ico-pause"></span></button>
       <input id="scrub" type="range" min="0" max="1000" value="0" aria-label="Car position along the curve">
       <span class="scrub-label" id="scrubLabel">t = 0%</span>
+    </div>
+    <div class="state-strip" aria-label="Current experiment state">
+      <div class="state-item"><span>Path region</span><output id="activeSegment">First bend</output></div>
+      <div class="state-item"><span>Active curvature</span><output id="activeRadius">&rho; = 40.0 m</output></div>
+      <div class="state-item"><span>Polar origin</span><output id="originState">Custom position</output></div>
     </div>
     <div class="legend">
       <span><i class="swatch" style="background:var(--v-arrow)"></i> velocity v (true vector)</span>
@@ -440,6 +489,7 @@
 
   document.getElementById('btn-reset-o').addEventListener('click', function(){ O.x = O_DEFAULT.x; O.y = O_DEFAULT.y; });
   document.getElementById('btn-center').addEventListener('click', function(){ O.x = C1.x; O.y = C1.y; });
+  document.getElementById('btn-center2').addEventListener('click', function(){ O.x = C2.x; O.y = C2.y; });
 
   // A small window around the exact arc junction where curvature (and so
   // r-double-dot / theta-double-dot / a_r / a_theta) jumps discontinuously
@@ -577,6 +627,9 @@
     document.getElementById('at').textContent = '0.00 m/s²';
     document.getElementById('an').textContent = fmt(A_N,2) + ' m/s²';
     document.getElementById('rho').textContent = fmt(rhoM,1) + ' m';
+    document.getElementById('activeSegment').textContent = inTransition ? 'Arc junction' : (t <= SPLIT ? 'First bend' : 'Second bend');
+    document.getElementById('activeRadius').textContent = 'ρ = ' + fmt(rhoM,1) + ' m';
+    document.getElementById('originState').textContent = originDescription();
 
     document.getElementById('r').textContent = fmt(rM,2) + ' m';
     document.getElementById('theta').textContent = fmt(thetaDeg,1) + '°';
@@ -709,6 +762,29 @@
     RHO2_M = Number(rho2Slider.value);
     document.getElementById('rho2Val').textContent = fmt(RHO2_M,0) + ' m';
     recomputeGeometry();
+  });
+
+  function pauseAt(position){
+    playing = false;
+    setPlayIcon();
+    playBtn.setAttribute('aria-pressed','false');
+    playBtn.setAttribute('aria-label','Play animation');
+    t = Math.max(0,Math.min(1,position));
+    syncScrub();
+    render();
+  }
+  document.getElementById('pos-first').addEventListener('click', function(){ pauseAt(SPLIT*0.45); });
+  document.getElementById('pos-junction').addEventListener('click', function(){ pauseAt(Math.max(0,SPLIT-JUNCTION_T_EPS*1.8)); });
+  document.getElementById('pos-second').addEventListener('click', function(){ pauseAt(SPLIT+(1-SPLIT)*0.45); });
+  document.getElementById('resetExperiment').addEventListener('click', function(){
+    V0 = 15; RHO1_M = 40; RHO2_M = 28; t = 0; dir = 1;
+    O.x = O_DEFAULT.x; O.y = O_DEFAULT.y;
+    speedSlider.value = '15'; rho1Slider.value = '40'; rho2Slider.value = '28';
+    document.getElementById('speedVal').textContent = '15.0 m/s';
+    document.getElementById('rho1Val').textContent = '40 m';
+    document.getElementById('rho2Val').textContent = '28 m';
+    recomputeGeometry();
+    pauseAt(0);
   });
 
   updateInsight();
